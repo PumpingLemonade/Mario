@@ -41,6 +41,88 @@ get_pixel_end:
 	bx lr 
 
 //==============================================================
+//short_int getPixelMajority(int sprite_data)
+//Check if sprite has hit an interactive box.  We will return the color that he is touching the most.  
+//If mario is only touching one box, we return the color of the box.  If he is touching two boxes, we first 
+//sample the right, then the left.  If they are the same color, we return the color.  If not, we sample the center color.  
+//If we return the color that matches the center color 
+//r0: sprite_data
+//Returns: void 
+//==============================================================
+getPixelMajority: 
+
+	push {r4, r5, r6, r7, lr}
+
+	x_pos			.req r4			//x position of the sprite 
+	y_pos  			.req r5			//y position of the sprite
+	width 			.req r6			//Height of the sprite 
+	height  		.req r7			//Width of the sprite  
+		
+	//Load Mario's data from memory 
+	ldr r0, =mario_data 
+	ldmia r0, {x_pos, y_pos}		//r4: x position, r5: y position 
+		
+	add r0, #12						//Address of mario_width 
+	ldmia r0, {width, height}		//r6: width, r7: height 
+	
+	sub y_pos, y_pos, height		//Make the y location the top of Mario.  We only need to check different x positions.
+	
+	//Get color at Mario's top right location 
+	
+	mov r0, x_pos					//arg1: right x position
+	mov r1, y_pos					//arg2: top y location 
+	ldr r2, =cur_background
+	ldr r2, [r2]					//arg3: pointer to current background 
+	bl getPixelColor				//Call getPixelColor 
+	
+	mov r8, r0						//Save top right color in safe place 
+	
+	sub r0, x_pos, width			//arg1: left x position
+	mov r1, y_pos					//arg2: top y location 
+	ldr r2, =cur_background
+	ldr r2, [r2]					//arg3: pointer to current background  
+	
+	bl getPixelColor				//Call getPixelColor 
+	
+	mov r9, r0						//Save top left color in safe place 
+	
+	udiv r0, r6, #2					//width/2 
+	sub r0, r4, r0					//arg1: x position - width/2 
+	sub r1, r7						//arg2: y position - height 
+	
+	ldr r2, =cur_background
+	ldr r2, [r2]					//arg3: pointer to current background  
+	
+	bl getPixelColor				//Call getPixelColor 
+	
+	mov r10, r0						//Save top center color in safe place 
+	
+	ldr r0, =hit_color				//Get question box color 
+	ldr r0, [r0]
+	
+	ldr r1, =wood_color				//Get wood box color 
+	ldr r1, =[r1]
+	
+//Check if only one box was hit 
+one_color:					
+	//check top left first 
+	cmp r8, r0 
+	
+	
+gPM_tie_break:
+	
+
+	
+
+	
+	
+
+gPM_end:
+	pop {r4, r5, r6, r7, lr}
+	bx lr 
+
+
+//==============================================================
 //boolean CollisionColorCheck(int sprite_data, int direction, int color)
 //Checks whether a character is hitting a certain color in the specified direction
 //r0: sprite_loc: pointer to the sprite's 
@@ -288,22 +370,7 @@ CMLR_end:
 //==============================================================
 CollisionBox:
 	push {r4, r5, r6, r7, lr}
-	
-	//Get color at Mario's top center position
-	ldr r0, =mario_data 
-	ldmia r0, {r4, r5}	//r4: x position, r5: y position 
-	
-	add r0, #12			//Address of mario_width 
-	ldmia r0, {r6, r7}	//r6: width, r7: height 
-	
-	udiv r0, r6, #2		//width/2 
-	sub r0, r4, r0		//arg1: x position - width/2 
-	sub r1, r7			//arg2: y position - height 
-	
-	ldr r2, =cur_background
-	ldr r2, [r2]		//arg3: pointer to current background 
-	
-	bl getPixelColor	//Call getPixelColor 
+
 	
 	ldr r1, =hit_color	
 	ldr r1, [r1]		//Color of question box 
