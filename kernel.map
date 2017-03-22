@@ -6,169 +6,186 @@ Name             Origin             Length             Attributes
 
 Linker script and memory map
 
-LOAD build/main.o
 LOAD build/picture.o
 LOAD build/jtag.o
 LOAD build/framebuffer.o
 LOAD build/misc_flag.o
 LOAD build/draw.o
-LOAD build/collision.o
 LOAD build/snes.o
+LOAD build/menu.o
+LOAD build/main.o
+LOAD build/collision.o
 
 .init           0x00008000        0x4
  *(.init)
  .init          0x00008000        0x4 build/main.o
                 0x00008000                _start
 
-.data           0x00009080   0x1809ec
+.data           0x00009080   0x480fae
  *(.data)
- .data          0x00009080        0x0 build/main.o
- .data          0x00009080   0x180860 build/picture.o
+ .data          0x00009080   0x480e04 build/picture.o
                 0x00009080                cur_background
                 0x00009084                is_floor
                 0x00009088                mario_data
                 0x00009098                mario_picture
-                0x000090a4                background_1
-                0x000090b0                floor_color
-                0x000090b4                hit_color
-                0x000090b8                wood_color
-                0x000090bc                ground_color_1
-                0x000090c0                ground_color_2
-                0x000090c4                impassable_color
-                0x000090c8                jump_cnt
-                0x000090cc                jump_flag
-                0x000090d2                tester_yellow
-                0x000090d4                sample
-                0x000090de                mario
- .data          0x001898e0        0x0 build/jtag.o
- .data          0x001898e0       0x70 build/framebuffer.o
-                0x00189940                FrameBufferPointer
- .data          0x00189950        0x0 build/misc_flag.o
- .data          0x00189950        0x0 build/draw.o
- .data          0x00189950        0x0 build/collision.o
- .data          0x00189950      0x11c build/snes.o
+                0x000090a4                main_menu_pic
+                0x000090b0                menu_selector_pic
+                0x000090bc                exit_screen_pic
+                0x000090c8                background_1
+                0x000090d8                floor_color
+                0x000090dc                hit_color
+                0x000090e0                wood_color
+                0x000090e4                ground_color_1
+                0x000090e8                ground_color_2
+                0x000090ec                impassable_color
+                0x000090f0                jump_cnt
+                0x000090f4                jump_flag
+                0x000090fa                tester_yellow
+                0x000090fc                sample
+                0x00009106                mario
+ .data          0x00489e84        0x0 build/jtag.o
+ *fill*         0x00489e84        0xc 3f3f3f3f
+ .data          0x00489e90       0x70 build/framebuffer.o
+                0x00489ef0                FrameBufferPointer
+ .data          0x00489f00        0x0 build/misc_flag.o
+ .data          0x00489f00        0x0 build/draw.o
+ .data          0x00489f00      0x11c build/snes.o
+ .data          0x0048a01c       0x12 build/menu.o
+ .data          0x0048a02e        0x0 build/main.o
+ .data          0x0048a02e        0x0 build/collision.o
  *.c.o(*)
 
-.igot.plt       0x00189a6c        0x0
- .igot.plt      0x00000000        0x0 build/main.o
+.igot.plt       0x0048a030        0x0
+ .igot.plt      0x00000000        0x0 build/picture.o
 
-.text           0x00189a6c      0x8a8
+.text           0x0048a030      0x9fc
  *.c.o(.text)
  *(.text)
- .text          0x00189a6c      0x13c build/main.o
- .text          0x00189ba8        0x0 build/picture.o
- .text          0x00189ba8       0x8c build/jtag.o
-                0x00189ba8                EnableJTAG
- .text          0x00189c34       0x80 build/framebuffer.o
-                0x00189c34                InitFrameBuffer
- .text          0x00189cb4       0x2c build/misc_flag.o
-                0x00189cb4                endJump
- .text          0x00189ce0      0x29c build/draw.o
-                0x00189ce0                moveThing
-                0x00189eb8                drawPicture
-                0x00189f08                clearScreen
-                0x00189f5c                redrawBlocks
- .text          0x00189f7c      0x218 build/collision.o
-                0x00189f7c                getPixelColor
-                0x0018a074                CollisionMarioBottom
-                0x0018a0c4                CollisionMarioTop
- .text          0x0018a194      0x180 build/snes.o
-                0x0018a194                InitGPIOSNES
-                0x0018a214                ReadSNES
+ .text          0x0048a030        0x0 build/picture.o
+ .text          0x0048a030       0x8c build/jtag.o
+                0x0048a030                EnableJTAG
+ .text          0x0048a0bc       0x80 build/framebuffer.o
+                0x0048a0bc                InitFrameBuffer
+ .text          0x0048a13c       0x2c build/misc_flag.o
+                0x0048a13c                endJump
+ .text          0x0048a168      0x2e4 build/draw.o
+                0x0048a168                moveThing
+                0x0048a340                drawPicture
+                0x0048a390                clearScreen
+                0x0048a3e4                redrawBlocks
+                0x0048a3f0                drawRectangle
+ .text          0x0048a44c      0x180 build/snes.o
+                0x0048a44c                InitGPIOSNES
+                0x0048a4cc                ReadSNES
+ .text          0x0048a5cc       0xe8 build/menu.o
+                0x0048a5cc                menu_select
+ .text          0x0048a6b4      0x154 build/main.o
+ .text          0x0048a808      0x224 build/collision.o
+                0x0048a808                getPixelColor
+                0x0048a900                CollisionMarioBottom
+                0x0048a950                CollisionMarioTop
 OUTPUT(build/output.elf elf32-littlearm)
 
-.glue_7         0x0018a314        0x0
+.glue_7         0x0048aa2c        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x0018a314        0x0
+.glue_7t        0x0048aa2c        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x0018a314        0x0
+.vfp11_veneer   0x0048aa2c        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x0018a314        0x0
+.v4_bx          0x0048aa2c        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.iplt           0x0018a314        0x0
- .iplt          0x00000000        0x0 build/main.o
+.iplt           0x0048aa2c        0x0
+ .iplt          0x00000000        0x0 build/picture.o
 
-.rel.dyn        0x0018a314        0x0
- .rel.iplt      0x00000000        0x0 build/main.o
+.rel.dyn        0x0048aa2c        0x0
+ .rel.iplt      0x00000000        0x0 build/picture.o
 
-.bss            0x0018a314        0x0
- .bss           0x0018a314        0x0 build/main.o
- .bss           0x0018a314        0x0 build/picture.o
- .bss           0x0018a314        0x0 build/jtag.o
- .bss           0x0018a314        0x0 build/framebuffer.o
- .bss           0x0018a314        0x0 build/misc_flag.o
- .bss           0x0018a314        0x0 build/draw.o
- .bss           0x0018a314        0x0 build/collision.o
- .bss           0x0018a314        0x0 build/snes.o
+.bss            0x0048aa2c        0x0
+ .bss           0x0048aa2c        0x0 build/picture.o
+ .bss           0x0048aa2c        0x0 build/jtag.o
+ .bss           0x0048aa2c        0x0 build/framebuffer.o
+ .bss           0x0048aa2c        0x0 build/misc_flag.o
+ .bss           0x0048aa2c        0x0 build/draw.o
+ .bss           0x0048aa2c        0x0 build/snes.o
+ .bss           0x0048aa2c        0x0 build/menu.o
+ .bss           0x0048aa2c        0x0 build/main.o
+ .bss           0x0048aa2c        0x0 build/collision.o
 
 .ARM.attributes
                 0x00000000       0x29
  .ARM.attributes
-                0x00000000       0x29 build/main.o
+                0x00000000       0x29 build/picture.o
  .ARM.attributes
-                0x00000029       0x29 build/picture.o
+                0x00000029       0x29 build/jtag.o
  .ARM.attributes
-                0x00000052       0x29 build/jtag.o
+                0x00000052       0x29 build/framebuffer.o
  .ARM.attributes
-                0x0000007b       0x29 build/framebuffer.o
+                0x0000007b       0x29 build/misc_flag.o
  .ARM.attributes
-                0x000000a4       0x29 build/misc_flag.o
+                0x000000a4       0x29 build/draw.o
  .ARM.attributes
-                0x000000cd       0x29 build/draw.o
+                0x000000cd       0x29 build/snes.o
  .ARM.attributes
-                0x000000f6       0x29 build/collision.o
+                0x000000f6       0x29 build/menu.o
  .ARM.attributes
-                0x0000011f       0x29 build/snes.o
+                0x0000011f       0x29 build/main.o
+ .ARM.attributes
+                0x00000148       0x29 build/collision.o
 
 .set            0x00000000        0x0
  .set           0x00000000        0x0 build/snes.o
 
-.debug_line     0x00000000      0x43f
- .debug_line    0x00000000       0xa5 build/main.o
- .debug_line    0x000000a5       0x61 build/jtag.o
- .debug_line    0x00000106       0x67 build/framebuffer.o
- .debug_line    0x0000016d       0x4c build/misc_flag.o
- .debug_line    0x000001b9       0xf7 build/draw.o
- .debug_line    0x000002b0       0xe1 build/collision.o
- .debug_line    0x00000391       0xae build/snes.o
+.debug_line     0x00000000      0x4d6
+ .debug_line    0x00000000       0x61 build/jtag.o
+ .debug_line    0x00000061       0x67 build/framebuffer.o
+ .debug_line    0x000000c8       0x4c build/misc_flag.o
+ .debug_line    0x00000114      0x10b build/draw.o
+ .debug_line    0x0000021f       0xae build/snes.o
+ .debug_line    0x000002cd       0x7a build/menu.o
+ .debug_line    0x00000347       0xab build/main.o
+ .debug_line    0x000003f2       0xe4 build/collision.o
 
-.debug_info     0x00000000      0x2bb
- .debug_info    0x00000000       0x5e build/main.o
- .debug_info    0x0000005e       0x62 build/jtag.o
- .debug_info    0x000000c0       0x69 build/framebuffer.o
- .debug_info    0x00000129       0x67 build/misc_flag.o
- .debug_info    0x00000190       0x62 build/draw.o
- .debug_info    0x000001f2       0x67 build/collision.o
- .debug_info    0x00000259       0x62 build/snes.o
+.debug_info     0x00000000      0x355
+ .debug_info    0x00000000       0x69 build/jtag.o
+ .debug_info    0x00000069       0x70 build/framebuffer.o
+ .debug_info    0x000000d9       0x6e build/misc_flag.o
+ .debug_info    0x00000147       0x69 build/draw.o
+ .debug_info    0x000001b0       0x69 build/snes.o
+ .debug_info    0x00000219       0x69 build/menu.o
+ .debug_info    0x00000282       0x65 build/main.o
+ .debug_info    0x000002e7       0x6e build/collision.o
 
-.debug_abbrev   0x00000000       0x8a
- .debug_abbrev  0x00000000       0x12 build/main.o
- .debug_abbrev  0x00000012       0x14 build/jtag.o
- .debug_abbrev  0x00000026       0x14 build/framebuffer.o
- .debug_abbrev  0x0000003a       0x14 build/misc_flag.o
- .debug_abbrev  0x0000004e       0x14 build/draw.o
- .debug_abbrev  0x00000062       0x14 build/collision.o
- .debug_abbrev  0x00000076       0x14 build/snes.o
+.debug_abbrev   0x00000000       0x9e
+ .debug_abbrev  0x00000000       0x14 build/jtag.o
+ .debug_abbrev  0x00000014       0x14 build/framebuffer.o
+ .debug_abbrev  0x00000028       0x14 build/misc_flag.o
+ .debug_abbrev  0x0000003c       0x14 build/draw.o
+ .debug_abbrev  0x00000050       0x14 build/snes.o
+ .debug_abbrev  0x00000064       0x14 build/menu.o
+ .debug_abbrev  0x00000078       0x12 build/main.o
+ .debug_abbrev  0x0000008a       0x14 build/collision.o
 
-.debug_aranges  0x00000000       0xe8
+.debug_aranges  0x00000000      0x108
  .debug_aranges
-                0x00000000       0x28 build/main.o
+                0x00000000       0x20 build/jtag.o
  .debug_aranges
-                0x00000028       0x20 build/jtag.o
+                0x00000020       0x20 build/framebuffer.o
  .debug_aranges
-                0x00000048       0x20 build/framebuffer.o
+                0x00000040       0x20 build/misc_flag.o
  .debug_aranges
-                0x00000068       0x20 build/misc_flag.o
+                0x00000060       0x20 build/draw.o
  .debug_aranges
-                0x00000088       0x20 build/draw.o
+                0x00000080       0x20 build/snes.o
  .debug_aranges
-                0x000000a8       0x20 build/collision.o
+                0x000000a0       0x20 build/menu.o
  .debug_aranges
-                0x000000c8       0x20 build/snes.o
+                0x000000c0       0x28 build/main.o
+ .debug_aranges
+                0x000000e8       0x20 build/collision.o
 
 .debug_ranges   0x00000000       0x20
  .debug_ranges  0x00000000       0x20 build/main.o

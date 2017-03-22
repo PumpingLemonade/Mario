@@ -3,7 +3,7 @@
 .global drawPicture
 .global clearScreen
 .global redrawBlocks
-
+.global drawRectangle
 //======================================================
 //void moveThing(int thing_pointer) 
 //Draws something in new location.  Clears delta values 
@@ -372,6 +372,36 @@ redrawBlocks:
 	pop {lr}
 	bx lr 
 
+//===================================
+// Draws a rectanlge
+// Parameters:
+//		r0 - x
+//		r1 - y
+//		r2 - color
+//		r3 - width
+//		r4 - height
+//==================================	
+drawRectangle:
+	push {r7, r8, lr}
+	mov r7, r0
+	mov r6, r0
+	mov r8, r1
+	add r3, r7
+	add r4, r8
+rec_top:
+	cmp r7, r3 		//once x == width
+	bhs rec_next_line
+	mov r0, r7
+	mov r1, r8
+	bl DrawPixel
+	add r7, #1
+	b rec_top
+rec_next_line:
+	cmp r8, r4
+	pophi {r7, r8, pc}
+	mov r7, r6
+	add r8, #1
+	b rec_top
 
 
 
