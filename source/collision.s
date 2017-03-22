@@ -1,6 +1,7 @@
 .global getPixelColor
 .global CollisionMarioBottom
 .global CollisionMarioTop
+.global CollisionMarioLeftRight
 
 .equ sample_interval, 1	//Interval to sample colors 
 
@@ -86,6 +87,10 @@ CollisionColorCheck:
 CCC_top_bottom:
 	x_pos_end		.req r10 	
 	sub x_pos_end, x_pos, width  		//Last x position to check 
+	
+	add x_pos_end, #1					//Do not check bottom left corner 
+	sub x_pos, #1						//Do not check bottom right corner 
+	
 	b CCC_top_bottom_loop_test			//Branch to CCC_top_loop_test
 	
 CCC_top_bottom_loop:
@@ -116,6 +121,10 @@ CCC_right_left:
 	
 	y_pos_end		.req r10 
 	sub y_pos_end, y_pos, height 		//Last y position to check 
+	
+	add y_pos_end, #1					//Do not check top corner
+	sub y_pos, #1						//Do not check bottom corner 
+	
 	b CCC_right_left_loop_test			//Branch to CCC_right_left_loop_test 
 	
 CCC_right_left_loop:
@@ -162,7 +171,8 @@ CollisionMarioBottom:
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
 	
 	ldr r0, =mario_data 
-	bl isCollisionFloor					//Call isCollisionFloor
+	mov r1, #2							//Check the bottom 
+	bl isCollisionImpassable			//Call isCollisionImpassable
 	cmp r0, #1							//Has mario hit the floor? 
 	beq CMB_floor 						//Branch to CMB_floor 
 	
@@ -229,62 +239,139 @@ CMT_end:
 	bx lr 
 
 //==============================================================
-//void CollisionMarioLeft()
-//Handle collisions when mario moves left 
+//void CollisionMarioLeftRight()
+//Handle collisions when mario moves left or right 
 //Returns: void 
 //==============================================================
+CollisionMarioLeftRight:
 	push {r4, r5, r6, r7, lr}
 	
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
+	
+	//Check if mario hit an impassable object to the left 
+	ldr r0, =mario_data 				//Arg1: address of mario_data
+	mov r1, #4							//Arg2: Check the left
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	
+	cmp r0, #1							//Has mario hit the floor? 
+	beq CMLR_impassable	 				//Branch to CMLR_impassable	 
+	
+	//Check if mario hit an impassable object to the right
+	ldr r0, =mario_data 				//Arg1: address of mario_data
+	mov r1, #3							//Arg2: Check the left
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	
+	cmp r0, #1							//Has mario hit the floor? 
+	beq CMLR_impassable	 				//Branch to CMLR_impassable	
+	
+	b CMLR_end							//Branch to end of the function
+
+CMLR_impassable:
+
+	//Reverse the change made by the update function in the x direction 
+	sub r4, r6							//Mario x = mario x - delta x 
+	mov r6, #0							//Clear delta x 
+	
+	ldr r0, =mario_data					//Get address of mario_data 
+	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
+
+CMLR_end:
+	pop {r4, r5, r6, r7, lr}
+	bx lr 
+
 
 //==============================================================
-//CollisionMarioRight
+//int CollisionBox()
 //Handle collisions when mario moves right 
+//Returns: box that was destroyed {0: first box 1: second box ...} -1 if no box is destroyed 
+//==============================================================
+CollisionBox:
+	push {r4, r5, r6, r7, lr}
+	
+	//Get color at Mario's top center position
+	ldr r0, =mario_data 
+	ldmia r0, {r4, r5}	//r4: x position, r5: y position 
+	
+	add r0, #12			//Address of mario_width 
+	ldmia r0, {r6, r7}	//r6: width, r7: height 
+	
+	udiv r0, r6, #2		//width/2 
+	sub r0, r4, r0		//arg1: x position - width/2 
+	sub r1, r7			//arg2: y position - height 
+	
+	ldr r2, =cur_background
+	ldr r2, [r2]		//arg3: pointer to current background 
+	
+	bl getPixelColor	//Call getPixelColor 
+	
+	ldr r1, =hit_color	
+	ldr r1, [r1]		//Color of question box 
+	cmp r0, r1 			//Hit question box? 
+	beq CB_qbox 		//Branch to CB_qbox 
+	
+	ldr r1, =wood_color
+	ldr r1, [r1] 		//Color of wood box 
+	cmp r0, r1			//Hit wood box?
+	beq CB_wbox 		//Branch to CB_qbox 
+	
+	b no_box			//No interactive box was hit  
+	
+qbox:
+
+
+wbox:
+	
+	
+no_box:
+
+CB_end:
+	pop {lr}
+	bx lr 
 
 //==============================================================
-
-//==============================================================
-//boolean isCollisionFloor(int spirte )
+//boolean isCollisionImpassable(int spirte, int direction )
 //Checks if the sprite is on the floor 
 //r0: pointer to sprite_data 
+//r1: direction to check 1:top, 2:bottom, 3:right, 4: left 
 //Returns: true if the sprite is on the floor, false otherwise 
 //==============================================================
-isCollisionFloor:
+isCollisionImpassable:
 
-	push {r4, r5, lr}
+	push {r4, r5, r6, lr}
 
 	mov r4, r0							//Save pointer to sprite data in safe place 
 	mov r5, #0							//Set default return value to false
+	mov r6, r1							//Save direction in a safe place 
 
 	//Check Pink
 	mov r0, r4							//Arg1: address of mario_data
-	mov r1, #2							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: Check the bottom
 	ldr r2, =ground_color_1				
 	ldr r2, [r2]						//Arg3: Check pink
 	bl CollisionColorCheck
 	
-	cmp r0, #1 							//Mario has hit a floor? 
+	cmp r0, #1 							//Sprite has hit a floor? 
 	beq iCC_true 						//Branch to CMB_floor 
 	
 	//Check Black
 	mov r0, r4							//Arg1: address of mario_data
-	mov r1, #2							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: Check the bottom
 	ldr r2, =impassable_color			
 	ldr r2, [r2]						//Arg3: Check black 
 	bl CollisionColorCheck
 	
-	cmp r0, #1 							//Mario has hit a floor? 
+	cmp r0, #1 							//Sprite has hit something? 
 	beq iCC_true 						//Branch to CMB_floor 
 	
-	//Bheck Brown 
+	//Check Brown 
 	mov r0, r4							//Arg1: address of mario_data
-	mov r1, #2							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: Check the bottom
 	ldr r2, =ground_color_2				
 	ldr r2, [r2]						//Arg3: Check brown
 	bl CollisionColorCheck
 	
-	cmp r0, #1 							//Mario has hit a floor? 
+	cmp r0, #1 							//Sprite has hit a floor? 
 	beq iCC_true						//Return true 	
 	
 	b iCC_end							//Sprite is not touching the floor so return false 
@@ -295,7 +382,7 @@ iCC_true:
 
 iCC_end:
 	
-	pop {r4, r5, lr}
+	pop {r4, r5, r6, lr}
 	bx lr
 	
 
