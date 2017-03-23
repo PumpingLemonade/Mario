@@ -4,6 +4,9 @@
 .global CollisionMarioLeftRight
 
 .equ sample_interval, 1	//Interval to sample colors 
+.equ block_width, 32	//Block width in pixels
+.equ block_height, 32	//Block height in pixels 
+.equ mario_height, 32
 
 //==============================================================
 //short_int getPixelColor(int pixel_x, int pixel_y, int addr) 
@@ -59,7 +62,7 @@ getPixelMajority:
 	height  		.req r7			//Width of the sprite  
 		
 	//Load Mario's data from memory 
-	ldr r0, =mario_data 
+	//ldr r0, =mario_data 
 	ldmia r0, {x_pos, y_pos}		//r4: x position, r5: y position 
 		
 	add r0, #12						//Address of mario_width 
@@ -438,31 +441,92 @@ CMLR_end:
 //Returns: box that was destroyed {0: first box 1: second box ...} -1 if no box is destroyed 
 //==============================================================
 CollisionBox:
-	push {r4, r5, r6, r7, lr}
+	push {r4, r5, r6, r7, r8, r9, r10, lr}
 
-	//bl 
-	ldr r1, =hit_color	
-	ldr r1, [r1]		//Color of question box 
-	cmp r0, r1 			//Hit question box? 
-	beq CB_qbox 		//Branch to CB_qbox 
+	ldr r0, =mario_data 
+	bl getPixelMajority //Check if mario has hit a box 
 	
-	ldr r1, =wood_color
-	ldr r1, [r1] 		//Color of wood box 
-	cmp r0, r1			//Hit wood box?
-	beq CB_wbox 		//Branch to CB_qbox 
+	hit_x_pos			.req r4		//x position of the sprite 
+	hit_y_pos  			.req r5		//y position of the sprite 
 	
-	b no_box			//No interactive box was hit  
+	ldr r1, [r0], #4				//Check if mario has hit something 
+	cmp r1, #1						//Mario has hit something?
+	bne CB_end						//If not branch to the end of the program  
+	
+	ldmia r0, {hit_x_pos, hit_y_pos}	//Get the position that mario hit 
+	
+	box_x_pos			.req r6		//x position of the block 
+	box_y_pos  			.req r7		//y position of the block 
+	box_type			.req r8		//type of block 
+	
+	ldr r9, =cur_blocks 			//Address of cur_blocks
+	ldr r9, [r9] 					//Starting address of cur_blocks 
+	ldr r10, [r9], #4				//Load number of blocks in this block set 
+	
+	b CB_loop_test
+
+//Check which block was hit 
+CB_loop:
+	ldmia r9!, {box_x_pos, box_y_pos, box_type}
+	
+	add r0, box_x_pos, #block_width	//Get right x of block 
+	cmp hit_x_pos, r0 				//Did Mario hit this block 
+	bgt CB_loop_post				//Not this block 
+	
+	sub r0, hit_y_pos, #mario_height
+	cmp r0, box_y_pos				//Did Mario hit this block
+	ble CB_block_found				//If yes, branch to CB_block_found
+
+CB_loop_post:
+	
+	add r9, #4						//Skip the status 
+	sub r10, #1						//Decremenet number of blocks left to check 
+	
+CB_loop_test:
+	cmp r10, #0						//Have we checked all the blocks?
+	bgt CB_loop						//Continue to check blocks 
+	
+CB_block_found:
+	bl endJump						//End Jump
+
+	cmp box_type, #0				//Question block?
+	beq CB_qbox
+	
+	cmp box_type, #1				//Wood block?
+	beq CB_wbox
+	
+	cmp box_type, #2				//Solid block?
+	beq CB_end
+	
+	b CB_end						//End 
 	
 CB_qbox:
-
+	mov r0, box_x_pos 				//Arg1: x position to start draw from 
+	mov r1, box_y_pos 				//Arg2: y position to start draw from 
+	ldr r2, =stair_box 				//Arg3: picture to draw 
+	
+	bl drawPicture					//Call drawPicture 
+	
+	mov r0, #2
+	str r0, [r9, #-4] 				//Set box type to solid 
+	
+	b CB_end 						//Branch to end 
 
 CB_wbox:
-	
-	
-no_box:
 
+	mov r0, box_x_pos 				//Arg1: x position to start draw from 
+	mov r1, box_y_pos 				//Arg2: y position to start draw from 
+	ldr r2, =stair_box 				//Arg3: picture to draw 
+	
+	bl drawPicture					//Call drawPicture 
+	
+	mov r0, #0
+	str r0, [r9] 					//Set box status to destroyed 
+	
+	b CB_end 						//Branch to end 
+	
 CB_end:
-	pop {lr}
+	pop {r4, r5, r6, r7, r8, r9, r10, lr}
 	bx lr 
 
 //==============================================================
