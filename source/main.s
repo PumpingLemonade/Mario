@@ -144,8 +144,9 @@ update_end:
 collision:
 	push {lr}
 	
-	bl CollisionMarioBottom	//Handle top collisions
-	bl CollisionMarioTop	//Handle bottom collisions
+	bl CollisionMarioBottom			//Handle top collisions
+	bl CollisionMarioTop			//Handle bottom collisions
+	bl CollisionMarioLeftRight		//Handle right left collisions 
 	
 	pop {lr}
 	bx lr 
