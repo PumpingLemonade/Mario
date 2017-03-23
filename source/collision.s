@@ -51,7 +51,7 @@ get_pixel_end:
 //==============================================================
 getPixelMajority: 
 
-	push {r4, r5, r6, r7, lr}
+	push {r4, r5, r6, r7, r8, r9, r10, lr}
 
 	x_pos			.req r4			//x position of the sprite 
 	y_pos  			.req r5			//y position of the sprite
@@ -108,61 +108,81 @@ getPixelMajority:
 	ldr r1, =wood_color				//Get wood box color 
 	ldr r1, =[r1]
 	
-	mov r3, #0						//Set default return value 
+	//mov r3, #0						//Set default return value to false 
 	
-//Check if only one box was hit 
+//Was there a question box on the right ?
 gPM_right_check_qbox:					
 	cmp r8, r0						//Top right hit question box?
-	moveq r3, r0 					//Set temporary return value to color of question box 
+	//moveq r3, #1 					//Set return value to 1 
 	
 	bne gPM_right_check_wbox		//Check if a wood box was hit 
 	
 	cmp r9, r1						//Top left hit a question box? 
 	beq gPM_tie_break				//Check the center to break the tie 
-	
-	//Set return values 
-	movne r0, #1 					//Something was hit 			
-	movne r1, x_pos					//right x position
-	movne r2, y_pos					//top y location 
-	ldrne r10, =hit_coordinate		//Return address 
-	strne r10, {r0, r1, r2}			//Store return results in memory 
-	bne gPM_end						//Branch to end of program 
-	
+	bne gPM_right_set				//Only right hit significant 
+
+//Was there a wood box on the right ? 
 gPM_right_check_wbox:
 	cmp r8, r1						//Top right hit wood box? 
-	moveq r3, r1 					//Set temporary return value to color of wood box
+	//moveq r3, #1 					//Set temporary return value to color of wood box
 	
 	bne gPM_left_only				//right is not touching a question box or a wood box, check the left 
 	
 	cmp r9, r0						//Top left hit a question box? 
 	beq gPM_tie_break				//Check the center to break the tie 
-	bne gPM_end						//If not, then we are only touching the wood box 
+	bne gPM_right_set				//Only right hit significant 
 	
+	
+gPM_right_set:
+			
+	mov r0, x_pos					//right x position
+	mov r1, y_pos					//top y location 
+	ldr r10, =hit_coordinate		//Return address 
+	str r10, {r0, r1}				//Store return results in memory 
+	
+	bne gPM_end						//If not, then we are only touching the wood box 
+
+//There is no box on the right so just check the left 
 gPM_left_only:
 
 	cmp r9, r0						//Top left hit question box? 
-	moveq r3, r0					//Set return value to color of question box 
-	beq gPM_end						//Go to end of function
+	//moveq r3, #1					//Set return value to true 
+	beq gPM_left_only_set			//Set return arguments 
 	
-	cmp r9, r1						//Top right hit wood box?  
-	moveq r3, r1					//Set return value to color of wood box 
+	cmp r9, r1						//Top left hit wood box?  
+	//moveq r3, #1					//Set return value to true
+	beq gPM_left_only_set	
+	bne gPM_end						//If nothing was hit, branch to the end 
 	
+
+gPM_left_only_set:
+	sub r0, x_pos, width			//arg1: left x position
+	mov r1, y_pos					//arg2: top y location 
+	ldr r10, =hit_coordinate		//Return address 
+	str r10, {r0, r1}				//Store return results in memory 
+
 	b gPM_end						//Go to end of function 
 
 //We go to this label if we are touching a wood box and a question box at the same time 
 gPM_tie_break:
 	
-	cmp r10, r0						//Two questions boxes? 
-	moveq r3, r0					//Set return value to color of question box 				
-	beq gPM_end  
+	udiv r0, width, #2				//width/2 
+	sub r0, y_pos, r0				//arg1: x position - width/2 
+	mov r1, y_pos					//arg2: top y location 
+	ldr r10, =hit_coordinate		//Return address 
+	str r10, {r0, r1}				//Store return results in memory 
 	
-	cmp	r10, r1						//Two wood boxes?
-	moveq r3, r0 					//Set return value to color of wood box 	
+	//cmp r10, r0						//Two questions boxes? 
+	//moveq r3, r0					//Set return value to color of question box 				
+	//beq gPM_end  
+	
+	//cmp	r10, r1						//Two wood boxes?
+	//moveq r3, r0 					//Set return value to color of wood box 	
 
 gPM_end:
-	mov r0, r3						//Set return value 
+	ldr r0, =hit_coordinate			//Address of return values in memory
 
-	pop {r4, r5, r6, r7, lr}
+	pop {r4, r5, r6, r7, r8, r9, r10, lr}
 	bx lr 
 
 
