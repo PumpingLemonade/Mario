@@ -34,6 +34,15 @@ main:
 	
 	bl 		clearScreen
 	
+start_sceen:
+	mov r0, #0				// x location to draw start screen
+	mov r1, #0				//y locatation to draw start screen
+	ldr r2, =main_menu_pic
+	bl drawPicture
+	
+	bl menu_select			//user selects either play or exit
+		
+play_game:
 	mov r0, #0				//Arg1: x location to start drawing background
 	mov r1, #0				//Arg2: y location to start drawing background 
 	ldr r2, =background_1 	//Arg3: pointer to the structure containing the image data 
