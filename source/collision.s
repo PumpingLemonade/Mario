@@ -2,6 +2,7 @@
 .global CollisionMarioBottom
 .global CollisionMarioTop
 .global CollisionMarioLeftRight
+.global CollisionBox
 
 .equ sample_interval, 1	//Interval to sample colors 
 .equ block_width, 32	//Block width in pixels
@@ -62,8 +63,8 @@ getPixelMajority:
 	height  		.req r7			//Width of the sprite  
 		
 	//Load Mario's data from memory 
-	//ldr r0, =mario_data 
-	ldmia r0, {x_pos, y_pos}		//r4: x position, r5: y position 
+	ldr r0, =mario_data  
+	ldmia r0!, {x_pos, y_pos}		//r4: x position, r5: y position 
 		
 	add r0, #12						//Address of mario_width 
 	ldmia r0, {width, height}		//r6: width, r7: height 
@@ -107,10 +108,9 @@ getPixelMajority:
 	ldr r1, =wood_color				//Get wood box color 
 	ldr r1, [r1]
 	
-	//mov r3, #0						//Set default return value to false 
-	
 //Was there a question box on the right ?
-gPM_right_check_qbox:					
+gPM_right_check_qbox:	
+				
 	cmp r8, r0						//Top right hit question box?
 	//moveq r3, #1 					//Set return value to 1 
 	
@@ -369,7 +369,8 @@ CollisionMarioTop:
 	//Check if mario hit a ceiling 
 	ldr r0, =mario_data					//Arg1: address of mario_data
 	mov r1, #1							//Arg2: Check the bottom
-	ldr r2, =0xFF80						//Arg3: Check yellow 
+	ldr r2, =hit_color					//Arg3: Check yellow 
+	ldr r2, [r2]
 	bl CollisionColorCheck
 	
 	cmp r0, #1							//Mario has hit a ceiling 
@@ -452,13 +453,13 @@ CollisionBox:
 	ldr r1, [r0], #4				//Check if mario has hit something 
 	cmp r1, #1						//Mario has hit something?
 	bne CB_end						//If not branch to the end of the program  
-	
+
 	ldmia r0, {hit_x_pos, hit_y_pos}	//Get the position that mario hit 
 	
 	box_x_pos			.req r6		//x position of the block 
 	box_y_pos  			.req r7		//y position of the block 
 	box_type			.req r8		//type of block 
-	
+break111:
 	ldr r9, =cur_blocks 			//Address of cur_blocks
 	ldr r9, [r9] 					//Starting address of cur_blocks 
 	ldr r10, [r9], #4				//Load number of blocks in this block set 
@@ -526,6 +527,14 @@ CB_wbox:
 	b CB_end 						//Branch to end 
 	
 CB_end:
+
+	ldr r0, =hit_coordinate 
+	mov r1, #0
+	mov r2, #0
+	mov r3, #0
+	
+	stmia r0, {r1,r2,r3}			//Clear hit_coordinate 
+	
 	pop {r4, r5, r6, r7, r8, r9, r10, lr}
 	bx lr 
 
