@@ -47,7 +47,7 @@ get_pixel_end:
 //sample the right, then the left.  If they are the same color, we return the color.  If not, we sample the center color.  
 //If we return the color that matches the center color 
 //r0: sprite_data
-//Returns: Wood or question box color. 0 if Sprite is not touching anythign 
+//Returns: If a box was hit, the x position and y position 
 //==============================================================
 getPixelMajority: 
 
@@ -135,10 +135,11 @@ gPM_right_check_wbox:
 	
 gPM_right_set:
 			
-	mov r0, x_pos					//right x position
-	mov r1, y_pos					//top y location 
+	mov r0, #1						//Something was hit 
+	mov r1, x_pos					//right x position
+	mov r2, y_pos					//top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1}				//Store return results in memory 
+	str r10, {r0, r1, r2}			//Store return results in memory 
 	
 	bne gPM_end						//If not, then we are only touching the wood box 
 
@@ -156,21 +157,23 @@ gPM_left_only:
 	
 
 gPM_left_only_set:
-	sub r0, x_pos, width			//arg1: left x position
-	mov r1, y_pos					//arg2: top y location 
+	mov r0, #1						//Something was hit 
+	sub r1, x_pos, width			//arg1: left x position
+	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1}				//Store return results in memory 
+	str r10, {r0, r1, r2}			//Store return results in memory 
 
 	b gPM_end						//Go to end of function 
 
 //We go to this label if we are touching a wood box and a question box at the same time 
 gPM_tie_break:
 	
-	udiv r0, width, #2				//width/2 
-	sub r0, y_pos, r0				//arg1: x position - width/2 
-	mov r1, y_pos					//arg2: top y location 
+	mov r0, #1						//Something was hit 
+	udiv r1, width, #2				//width/2 
+	sub r1, y_pos, r0				//arg1: x position - width/2 
+	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1}				//Store return results in memory 
+	str r10, {r0, r1, r2}			//Store return results in memory 
 	
 	//cmp r10, r0						//Two questions boxes? 
 	//moveq r3, r0					//Set return value to color of question box 				
@@ -435,7 +438,7 @@ CMLR_end:
 CollisionBox:
 	push {r4, r5, r6, r7, lr}
 
-	
+	bl 
 	ldr r1, =hit_color	
 	ldr r1, [r1]		//Color of question box 
 	cmp r0, r1 			//Hit question box? 
