@@ -86,7 +86,8 @@ getPixelMajority:
 	
 	mov r9, r0						//Save top left color in safe place 
 	
-	udiv r0, width, #2				//width/2 
+	mov r0, #2
+	udiv r0, width, r0				//width/2 
 	sub r0, y_pos, r0				//arg1: x position - width/2 
 	mov r1, y_pos					//arg2: top y location 
 	
@@ -97,16 +98,11 @@ getPixelMajority:
 	
 	mov r10, r0						//Save top center color in safe place 
 	
-	.unreq	x_pos 
-	.unreq	y_pos 
-	.unreq	width 
-	.unreq	height 
-	
 	ldr r0, =hit_color				//Get question box color 
 	ldr r0, [r0]
 	
 	ldr r1, =wood_color				//Get wood box color 
-	ldr r1, =[r1]
+	ldr r1, [r1]
 	
 	//mov r3, #0						//Set default return value to false 
 	
@@ -139,7 +135,7 @@ gPM_right_set:
 	mov r1, x_pos					//right x position
 	mov r2, y_pos					//top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1, r2}			//Store return results in memory 
+	stmia r10, {r0, r1, r2}			//Store return results in memory 
 	
 	bne gPM_end						//If not, then we are only touching the wood box 
 
@@ -161,7 +157,7 @@ gPM_left_only_set:
 	sub r1, x_pos, width			//arg1: left x position
 	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1, r2}			//Store return results in memory 
+	stmia r10, {r0, r1, r2}			//Store return results in memory 
 
 	b gPM_end						//Go to end of function 
 
@@ -169,11 +165,12 @@ gPM_left_only_set:
 gPM_tie_break:
 	
 	mov r0, #1						//Something was hit 
-	udiv r1, width, #2				//width/2 
+	mov r1, #2
+	udiv r1, width, r1				//width/2 
 	sub r1, y_pos, r0				//arg1: x position - width/2 
 	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
-	str r10, {r0, r1, r2}			//Store return results in memory 
+	stmia r10, {r0, r1, r2}			//Store return results in memory 
 	
 	//cmp r10, r0						//Two questions boxes? 
 	//moveq r3, r0					//Set return value to color of question box 				
@@ -183,6 +180,11 @@ gPM_tie_break:
 	//moveq r3, r0 					//Set return value to color of wood box 	
 
 gPM_end:
+	.unreq	x_pos 
+	.unreq	y_pos 
+	.unreq	width 
+	.unreq	height 
+
 	ldr r0, =hit_coordinate			//Address of return values in memory
 
 	pop {r4, r5, r6, r7, r8, r9, r10, lr}
@@ -438,7 +440,7 @@ CMLR_end:
 CollisionBox:
 	push {r4, r5, r6, r7, lr}
 
-	bl 
+	//bl 
 	ldr r1, =hit_color	
 	ldr r1, [r1]		//Color of question box 
 	cmp r0, r1 			//Hit question box? 
@@ -451,10 +453,10 @@ CollisionBox:
 	
 	b no_box			//No interactive box was hit  
 	
-qbox:
+CB_qbox:
 
 
-wbox:
+CB_wbox:
 	
 	
 no_box:
