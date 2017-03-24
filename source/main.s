@@ -8,7 +8,7 @@ _start:
 
 	.equ mario_width, 32
 	.equ mario_height, 32
-	.equ jump_height, 150
+	.equ jump_height, 180
 	.equ up_pix,1
 	.equ down_pix, 1
 	.equ right_pix,1
@@ -33,7 +33,8 @@ main:
 //CHECK COLOR DEBUG_END 
 	
 	bl 		clearScreen
-	
+
+/**	
 start_sceen:
 	mov r0, #0				// x location to draw start screen
 	mov r1, #0				//y locatation to draw start screen
@@ -41,6 +42,7 @@ start_sceen:
 	bl drawPicture
 	
 	bl menu_select			//user selects either play or exit
+*/
 		
 play_game:
 	mov r0, #0				//Arg1: x location to start drawing background

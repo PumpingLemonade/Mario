@@ -7,7 +7,7 @@
 .equ sample_interval, 1	//Interval to sample colors 
 .equ block_width, 32	//Block width in pixels
 .equ block_height, 32	//Block height in pixels 
-.equ mario_height, 32
+.equ check_delta, 16
 
 //==============================================================
 //short_int getPixelColor(int pixel_x, int pixel_y, int addr) 
@@ -73,7 +73,7 @@ getPixelMajority:
 	
 	//Get color at Mario's top right location 
 	
-	mov r0, x_pos					//arg1: right x position
+	sub r0, x_pos, #1				//arg1: right x position -1 (Do not check corners because if Mario is perfectly lined up with a block, the corners will not be the right color)
 	mov r1, y_pos					//arg2: top y location 
 	ldr r2, =cur_background
 	ldr r2, [r2]					//arg3: pointer to current background 
@@ -81,7 +81,8 @@ getPixelMajority:
 	
 	mov r8, r0						//Save top right color in safe place 
 	
-	sub r0, x_pos, width			//arg1: left x position
+	sub r0, x_pos, width			//left x position 
+	add r0, #1						//arg1: left x position + 1 (Do not check corners because if Mario is perfectly lined up with a block, the corners will not be the right color)
 	mov r1, y_pos					//arg2: top y location 
 	ldr r2, =cur_background
 	ldr r2, [r2]					//arg3: pointer to current background  
@@ -116,7 +117,7 @@ gPM_right_check_qbox:
 	
 	bne gPM_right_check_wbox		//Check if a wood box was hit 
 	
-	cmp r9, r1						//Top left hit a question box? 
+	cmp r9, r1						//Top left hit a wood box? 
 	beq gPM_tie_break				//Check the center to break the tie 
 	bne gPM_right_set				//Only right hit significant 
 
@@ -163,14 +164,14 @@ gPM_left_only_set:
 	stmia r10, {r0, r1, r2}			//Store return results in memory 
 
 	b gPM_end						//Go to end of function 
-
+	
 //We go to this label if we are touching a wood box and a question box at the same time 
 gPM_tie_break:
 	
 	mov r0, #1						//Something was hit 
 	mov r1, #2
 	udiv r1, width, r1				//width/2 
-	sub r1, y_pos, r0				//arg1: x position - width/2 
+	sub r1, x_pos, r1				//arg1: x position - width/2 
 	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
 	stmia r10, {r0, r1, r2}			//Store return results in memory 
@@ -474,9 +475,14 @@ CB_loop:
 	cmp hit_x_pos, r0 				//Did Mario hit this block 
 	bgt CB_loop_post				//Not this block 
 	
-	sub r0, hit_y_pos, #mario_height
+	sub r0, hit_y_pos, #check_delta
 	cmp r0, box_y_pos				//Did Mario hit this block
-	ble CB_block_found				//If yes, branch to CB_block_found
+	
+	blt CB_loop_post				//If yes, branch to CB_block_found
+	
+	add r1, box_y_pos, #block_height//Get bottom of the block
+	cmp r0, r1
+	blt CB_block_found 
 
 CB_loop_post:
 	
@@ -504,7 +510,7 @@ CB_block_found:
 CB_qbox:
 	mov r0, box_x_pos 				//Arg1: x position to start draw from 
 	mov r1, box_y_pos 				//Arg2: y position to start draw from 
-	ldr r2, =stair_box 				//Arg3: picture to draw 
+	ldr r2, =stair_box_pic			//Arg3: picture to draw 
 	
 	bl drawPicture					//Call drawPicture 
 	
@@ -517,7 +523,7 @@ CB_wbox:
 
 	mov r0, box_x_pos 				//Arg1: x position to start draw from 
 	mov r1, box_y_pos 				//Arg2: y position to start draw from 
-	ldr r2, =stair_box 				//Arg3: picture to draw 
+	ldr r2, =stair_box_pic 			//Arg3: picture to draw 
 	
 	bl drawPicture					//Call drawPicture 
 	

@@ -329,6 +329,10 @@ drawPictureLoop:
 	pop    {r4,r5,r6,r7,r8,r9,lr}
 	mov	pc,	lr			//return
 
+//=====================================================
+//void clearScreen()
+//Clears the screen
+//=====================================================
 clearScreen:
 	push {r4,r5,r6,r7,r8,lr}
 
