@@ -1,5 +1,6 @@
 .section    .init
 .globl     _start
+.global		start_screen
 
 _start:
     b       main
@@ -34,7 +35,7 @@ main:
 	
 	bl 		clearScreen
 	
-start_sceen:
+start_screen:
 	mov r0, #0				// x location to draw start screen
 	mov r1, #0				//y locatation to draw start screen
 	ldr r2, =main_menu_pic

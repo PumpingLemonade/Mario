@@ -29,19 +29,32 @@ menu_select_loop:
 	movhi r5, #2			//clamp to 2
 	
 	tst r0, #0x100			//check if A was pressed
+	beq check_resume		//start checking which option the user selected
+	b menu_select_loop		//else loop again
 	
 check_resume:
-	cmpeq r5, #0			//if current selection is resume
+	cmp r5, #0			//if current selection is resume
 	bne check_restart
 	bl drawBackground		//redraw the background
-	.unreq PREV_BUTTONS
-	pop {r5, r8, pc}		//then return to game
+	b exit_pause_menu		//exit the game
 	
 check_restart:
 	cmp r5, #1				//if current selection is restart
-	b menu_select_loop
+	bne check_exit			//if not then skip
+	bl restart_game			//else restart game in restart.s
+	bl drawBackground
+	b exit_pause_menu		//return to game with reset values
+	
+check_exit:
+	cmp r5, #2				//if current selection is exit
+	bne menu_select_loop	//branch if not exit
+	bl restart_game			//else restart the game
+	b start_screen			//then go to start screen
 	
 	
+exit_pause_menu:
+	.unreq PREV_BUTTONS
+	pop {r5, r8, pc}		//return back to the game
 	
 	
 draw_pause_menu:
