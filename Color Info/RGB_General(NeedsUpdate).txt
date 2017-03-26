@@ -1,0 +1,36 @@
+QuestionBox
+=====================================================================================
+Brown: 153 78 0 	(Can't pass:Left/Top)
+Black: 3 3 3 		(Can't pass: Right)
+Black: 1 1 1 		(HitBox: Bottom)
+
+Black 3/3/3 		(R/L corner: to avoid touching a hitbox from a jump + R/L button)
+=====================================================================================
+
+
+WoodenBox
+=====================================================================================
+Pink:  255 204 197	(Can't pass:Top) (0xfe78)
+Brown: 153 78 0 	(Can't pass:Left/Right) (0x9a60)
+Black: 3 3 3 		(Can't pass:Left/Right))
+Black: 2 2 2 		(HitBox: Bottom)
+
+Black 3/3/3 		(R/L corner: to avoid touching a hitbox from a jump + R/L button)
+=====================================================================================
+
+
+GroundBox
+=====================================================================================
+Pink:  255 204 197	(Can't pass:Top/Left)
+Brown: 153 78 0 	(Can't pass:All)
+Black: 3 3 3 		(Can't pass:Bottom/Right)
+					(R/L side are important to avoid a possible bug when falling)
+=====================================================================================
+
+
+StairBox
+=====================================================================================
+Pink:  255 204 197	(Can't pass: Top/Left)
+Black: 3 3 3		(Can't pass: Right - no need for bottom check)
+Brown: 153 78 0		(Can't pass: Corners only, may be omitted)
+=====================================================================================
