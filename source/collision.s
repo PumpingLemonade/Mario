@@ -360,6 +360,9 @@ CMB_monster:
 	str r0, [r1]						//Update jump height in memory 
 	
 	bl killCurMonster					//Kill current monster
+	
+	mov r0, #100						//Add 100 to the score 
+	bl updateScore
 
 	b CMB_end 
 
@@ -508,6 +511,9 @@ CB_qbox:
 	mov r0, box_x_pos				//Arg1: x position
 	mov r1, box_y_pos				//Arg2: y position
 	bl coinInit						//Call coinInit
+	
+	mov r0, #50						//Add 50 to the score 
+	bl updateScore					//Update score 
 	
 	b CB_end 						//Branch to end 
 
