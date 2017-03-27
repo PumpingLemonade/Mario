@@ -1,5 +1,6 @@
 .section    .init
 .globl     _start
+.global		start_screen
 
 _start:
     b       main
@@ -34,15 +35,16 @@ main:
 	
 	bl 		clearScreen
 
-/**	
-start_sceen:
+
+	
+start_screen:
 	mov r0, #0				// x location to draw start screen
 	mov r1, #0				//y locatation to draw start screen
 	ldr r2, =main_menu_pic
 	bl drawPicture
 	
 	bl menu_select			//user selects either play or exit
-*/
+
 		
 play_game:
 	mov r0, #0				//Arg1: x location to start drawing background
@@ -70,6 +72,8 @@ update:
 	
 	ldr r1, =0xFFFF		//Bit mask 
 	eor r4, r1, r0		//Flip bits so 0 means unpressed and 1 means pressed 
+	
+	bl check_START
 	
 	mov r5, #0			//Initialize delta_y = 0 
 
@@ -101,6 +105,12 @@ check_A:
 	tst r4, #0x100		//0001 0000 0000b A button has been pressed? 
 	beq falling			//No, then branch to falling 
 	
+	//TEST. DELETE AFTER
+	push {r2}
+	mov r0, #77
+	bl updateScore
+	pop {r2}
+	
 	ldr r0, =is_floor	//Check if Mario is on a floor, he can only jump if he is on a floor
 	ldr r0, [r0]		//Load value of is_floor 
 	cmp r0, #1			//Is Mario on a floor
@@ -110,6 +120,13 @@ check_A:
 	str r0, [r2]		//Update jump_flag in memory 
 	
 	b move_left_right	//Branch to move_left_right
+	
+check_START:
+	//check if start button is pressed
+	push {lr}
+	tst r4, #0x8		//1000b 3rd bit is for START
+	blne pause_menu		//if pressed go to pause menu
+	pop {pc}
 	
 falling:
 
@@ -159,6 +176,7 @@ render:
 	
 	ldr r0, =mario_data 
 	bl moveThing 
+	bl renderScore
 	
 	pop {lr}
 	bx lr 
