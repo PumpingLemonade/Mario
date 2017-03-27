@@ -26,5 +26,14 @@ restart_game:
 	ldr r0, =jump_flag
 	mov r1, #-1
 	str r1, [r0]
+	
+	//reset score
+	ldr r0, =score
+	mov r1, #0					//reset score to 0
+	str r1, [r0]
+	
+	ldr r0, =score_changed
+	mov r1, #1					//1 is true for score_changed
+	str r1, [r0]
 		
 	pop {r4-r7, pc}

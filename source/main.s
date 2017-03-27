@@ -104,13 +104,7 @@ check_A:
 	// check if A button pressed 
 	tst r4, #0x100		//0001 0000 0000b A button has been pressed? 
 	beq falling			//No, then branch to falling 
-	
-	//TEST. DELETE AFTER
-	push {r2}
-	mov r0, #77
-	bl updateScore
-	pop {r2}
-	
+		
 	ldr r0, =is_floor	//Check if Mario is on a floor, he can only jump if he is on a floor
 	ldr r0, [r0]		//Load value of is_floor 
 	cmp r0, #1			//Is Mario on a floor
