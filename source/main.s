@@ -1,5 +1,6 @@
 .section    .init
 .globl     _start
+.global		start_screen
 
 _start:
     b       main
@@ -30,14 +31,15 @@ color:
 	
 	bl 		clearScreen
 
-start_sceen:
+start_screen:
+
 	mov r0, #0				// x location to draw start screen
 	mov r1, #0				//y locatation to draw start screen
 	ldr r2, =main_menu_pic
 	bl drawPicture
 	
 	bl menu_select			//user selects either play or exit
-		
+
 play_game:
 	mov r0, #0				//Arg1: x location to start drawing background
 	mov r1, #0				//Arg2: y location to start drawing background 
@@ -58,6 +60,7 @@ haltLoop$:
 //==========================================
 //void Update 
 update:
+
 	push {lr}
 
 	bl CoinUpdate
@@ -89,6 +92,9 @@ render:
 	bl moveThing
 	
 	bl RenderCoin					//Render the coin if necessary 
+
+	bl renderScore
+
 	
 	pop {lr}
 	bx lr 

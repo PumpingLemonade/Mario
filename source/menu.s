@@ -87,8 +87,9 @@ end_draw_menu_selector:
 // goes to a halt loop
 //==============================================
 exit_game:
-	mov r0, #0						// x pos 
-	mov r1, #0						// y pos
+	bl clearScreen					//clears the screen to black
+	ldr r0, =262						// x pos 
+	ldr r1, =359						// y pos
 	ldr r2, =exit_screen_pic
 	bl drawPicture
 	b haltLoop$
