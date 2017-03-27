@@ -159,6 +159,11 @@ drawBackground:
 	mov r1, #0						//y pos
 	ldr r2, =background_1			//data structure for background
 	bl drawPicture
+	
+	//redraw the score too
+	ldr r0, =score_changed			//changed score changed to true
+	mov r1, #1
+	str r1, [r0]
 	pop {pc}
 	
 .section .data

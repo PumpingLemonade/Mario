@@ -14,6 +14,8 @@ MarioUpdate:
 	ldr r1, =0xFFFF		//Bit mask 
 	eor r4, r1, r0		//Flip bits so 0 means unpressed and 1 means pressed 
 	
+	bl check_START
+	
 	mov r5, #0			//Initialize delta_y = 0 
 
 	ldr r2, =jump_flag	//Load address of jump_flag
@@ -59,6 +61,13 @@ check_A:
 	str r0, [r7]
 	
 	b move_left_right	//Branch to move_left_right
+	
+check_START:
+	//check if start button is pressed
+	push {lr}
+	tst r4, #0x8		//1000b 3rd bit is for START
+	blne pause_menu		//if pressed go to pause menu
+	pop {pc}
 	
 falling:
 
