@@ -2,7 +2,7 @@
 .global CollisionMarioBottom
 .global CollisionMarioTop
 .global CollisionMarioLeftRight
-.global CollisionBox
+.global CollisionMonster
 
 .equ sample_interval, 1	//Interval to sample colors 
 .equ block_width, 32	//Block width in pixels
@@ -17,15 +17,9 @@
 //Returns: 16 bit number representing the color, -1 if the specified coordinates are outside the picture 
 //==============================================================
 getPixelColor: 
-	push {r3,r4,r5,r6,lr}
+	push {r3, r6,lr}
 	
-	ldmia r2, {r3,r4,r5} 				//r3: address of picture, r4: width, r5: height 
-	
-	cmp r0, r4							//x coordinate greater than the width of the image?
-	bgt get_pixel_oor					//x is out of range, branch to get_pixel_oor 
-	
-	cmp r1, r5							//y coordinate greater than the wdith of the image? 
-	bgt get_pixel_oor					//y is out of range, branch to getPixel_oor
+	ldr  r3, [r2]  						//r3: address of picture
 	
 	// offset = (y * 1024) + x = x + (y << 10)
 	add		r6,	r0, r1, lsl #10
@@ -41,7 +35,7 @@ get_pixel_oor:
 	mov r0, #-1							//Return error code 
 	
 get_pixel_end:
-	pop {r3,r4,r5,r6,lr}
+	pop {r3, r6,lr}
 	bx lr 
 
 //==============================================================
@@ -75,8 +69,8 @@ getPixelMajority:
 	
 	sub r0, x_pos, #1				//arg1: right x position -1 (Do not check corners because if Mario is perfectly lined up with a block, the corners will not be the right color)
 	mov r1, y_pos					//arg2: top y location 
-	ldr r2, =cur_background
-	ldr r2, [r2]					//arg3: pointer to current background 
+	ldr r2, =dyn_background 		//arg3: pointer to current background 
+
 	bl getPixelColor				//Call getPixelColor 
 	
 	mov r8, r0						//Save top right color in safe place 
@@ -84,8 +78,8 @@ getPixelMajority:
 	sub r0, x_pos, width			//left x position 
 	add r0, #1						//arg1: left x position + 1 (Do not check corners because if Mario is perfectly lined up with a block, the corners will not be the right color)
 	mov r1, y_pos					//arg2: top y location 
-	ldr r2, =cur_background
-	ldr r2, [r2]					//arg3: pointer to current background  
+	ldr r2, =dyn_background 		//arg3: pointer to current background  
+
 	
 	bl getPixelColor				//Call getPixelColor 
 	
@@ -96,8 +90,7 @@ getPixelMajority:
 	sub r0, y_pos, r0				//arg1: x position - width/2 
 	mov r1, y_pos					//arg2: top y location 
 	
-	ldr r2, =cur_background
-	ldr r2, [r2]					//arg3: pointer to current background  
+	ldr r2, =dyn_background 		//arg3: pointer to current background  
 	
 	bl getPixelColor				//Call getPixelColor 
 	
@@ -175,13 +168,7 @@ gPM_tie_break:
 	mov r2, y_pos					//arg2: top y location 
 	ldr r10, =hit_coordinate		//Return address 
 	stmia r10, {r0, r1, r2}			//Store return results in memory 
-	
-	//cmp r10, r0						//Two questions boxes? 
-	//moveq r3, r0					//Set return value to color of question box 				
-	//beq gPM_end  
-	
-	//cmp	r10, r1						//Two wood boxes?
-	//moveq r3, r0 					//Set return value to color of wood box 	
+		
 
 gPM_end:
 	.unreq	x_pos 
@@ -220,9 +207,8 @@ CollisionColorCheck:
 	add r0, #12						//Set the pointer to point to the sprite's size 
 	ldmia r0, {width, height}		//Load the sprite's width and height from memory 
 	
-	ldr r8, =cur_background 		//Get address of pointer to current background
-	ldr background, [r8]			//Get address of current background
-	
+	ldr background, =dyn_background //Get address of current background
+			
 	cmp r1, #1						//Check top?
 	subeq y_pos, height				//y position = y position - height 
 	beq CCC_top_bottom				//Branch to CCC_top
@@ -325,6 +311,14 @@ CollisionMarioBottom:
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
 	
+	//MONSTER 
+	ldr r0, =mario_data					//Arg1: address of mario data 
+	mov r1, #2							//Arg2: check bottom
+	bl isMonsterHit						//Has mario hit a monster?
+	cmp r0, #1							
+	beq CMB_monster						//Branch CMB_monster
+	
+	//FLOOR
 	ldr r0, =mario_data 
 	mov r1, #2							//Check the bottom 
 	bl isCollisionImpassable			//Call isCollisionImpassable
@@ -335,7 +329,9 @@ CollisionMarioBottom:
 	ldr r0, =is_floor					//Else clear the floor flag 
 	mov r1, #0							
 	str r1, [r0]						//Clear floor flag in memory 
-	b CMB_end							
+	//END_FLOOR 
+
+	b CMB_end						
 	
 CMB_floor: 
 
@@ -350,7 +346,23 @@ CMB_floor:
 	ldr r0, =is_floor					//Set the floor flag 
 	mov r1, #1							
 	str r1, [r0]						//Set floor flag in memory 
+
+	b CMB_end							//Branch to CMB_end 
+
+CMB_monster: 
+
+	ldr r2, =jump_flag					//Load address of jump_flag
+	mov r0, #1							//Set jump flag to 1 
+	str r0, [r2]						//Update jump_flag in memory 
 	
+	ldr r1, =jump_height				//Get address of jump_height 
+	mov r0, #75							//Set jump height to 75 pixels 
+	str r0, [r1]						//Update jump height in memory 
+	
+	bl killCurMonster					//Kill current monster
+
+	b CMB_end 
+
 CMB_end:
 	pop {r4, r5, r6, r7, lr}
 	bx lr 
@@ -362,36 +374,12 @@ CMB_end:
 //Returns:void
 //==============================================================
 CollisionMarioTop:
-	push {r4, r5, r6, r7, lr}
+	push {lr}
 	
-	ldr r0, =mario_data					//Get address of mario_data
-	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
-	
-	//Check if mario hit a ceiling 
-	ldr r0, =mario_data					//Arg1: address of mario_data
-	mov r1, #1							//Arg2: Check the bottom
-	ldr r2, =hit_color					//Arg3: Check yellow 
-	ldr r2, [r2]
-	bl CollisionColorCheck
-	
-	cmp r0, #1							//Mario has hit a ceiling 
-	beq CMT_ceiling 					//Branch to CMT_ceiling 
-	
-	b CMB_end							//Branch to end of the function
-	
-CMT_ceiling: 
-	
-	//Reverse the change made by the update function in the x direction 
-	sub r4, r6							//Mario x = mario x - delta x 
-	mov r6, #0							//Clear delta x 
-	
-	ldr r0, =mario_data					//Get address of mario_data 
-	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
-	
-	bl endJump							//End Mario's jump early 
-	
+	bl CollisionBox		//Handle bottom collisions
+
 CMT_end:
-	pop {r4, r5, r6, r7, lr}
+	pop {lr}
 	bx lr 
 
 //==============================================================
@@ -497,10 +485,10 @@ CB_block_found:
 	bl endJump						//End Jump
 
 	cmp box_type, #0				//Question block?
-	beq CB_qbox
+	beq CB_wbox
 	
 	cmp box_type, #1				//Wood block?
-	beq CB_wbox
+	beq CB_qbox
 	
 	cmp box_type, #2				//Solid block?
 	beq CB_end
@@ -517,18 +505,32 @@ CB_qbox:
 	mov r0, #2
 	str r0, [r9, #-4] 				//Set box type to solid 
 	
+	mov r0, box_x_pos				//Arg1: x position
+	mov r1, box_y_pos				//Arg2: y position
+	bl coinInit						//Call coinInit
+	
 	b CB_end 						//Branch to end 
 
 CB_wbox:
 
 	mov r0, box_x_pos 				//Arg1: x position to start draw from 
 	mov r1, box_y_pos 				//Arg2: y position to start draw from 
-	ldr r2, =stair_box_pic 			//Arg3: picture to draw 
+	ldr r2, =sky_pic				//Arg3: picture to draw 
 	
 	bl drawPicture					//Call drawPicture 
 	
 	mov r0, #0
-	str r0, [r9] 					//Set box status to destroyed 
+	str r0, [r9] 					//Set box status to destroyed
+	
+	mov r0,	box_x_pos				//Arg1: x position
+	mov r1,	box_y_pos				//Arg2: y position
+	ldr r2, =cur_background		
+	ldr r2, [r2]					//Arg3: background 
+	ldr r3, =sky_pic 				//Arg4: picture to insert into background 
+	bl ReplaceBlockBG 				//Delete the box from the background 
+	
+	ldr r0, =mario_data					//Get address of mario_data
+	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
 	
 	b CB_end 						//Branch to end 
 	
@@ -580,7 +582,7 @@ isCollisionImpassable:
 	beq iCC_true 						//Branch to CMB_floor 
 	
 	//Check Brown 
-	mov r0, r4							//Arg1: address of mario_data
+	mov r0, r4							//Arg1: address of sprite_data
 	mov r1, r6							//Arg2: Check the bottom
 	ldr r2, =ground_color_2				
 	ldr r2, [r2]						//Arg3: Check brown
@@ -593,11 +595,149 @@ isCollisionImpassable:
 	
 	
 iCC_true:
-	mov r5, #1							//Set return value to true 
+	mov r0, #1							//Set return value to true 
 
 iCC_end:
 	
 	pop {r4, r5, r6, lr}
 	bx lr
 	
+//==============================================================
+//boolean isMonsterHit(int spirte, int direction)
+//Checks if sprite has hit the monster from specified direction 
+//r0: pointer to sprite_data 
+//r1: direction to check 1:top, 2:bottom, 3:right, 4: left 
+//Returns: true if the sprite hit a monster, false otherwise 
+//==============================================================
+isMonsterHit:
+	
+	push {r4, r5, r6, lr}
 
+	mov r4, r0							//Save pointer to sprite data in safe place 
+	mov r5, #0							//Set default return value to false
+	mov r6, r1							//Save direction in a safe place 
+
+	//Gumba color 
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction 
+	ldr r2, =gumba_color 			
+	ldr r2, [r2]						//Arg3: Check gumba color
+	bl CollisionColorCheck
+
+	pop {r4, r5, r6, lr}
+	bx lr 
+
+//==============================================================
+//void CollisionMonster 
+//Handles monster collisions
+//Returns: void
+//==============================================================
+CollisionMonster:
+	push {lr}
+	
+	ldr r0, =mob1_data
+	bl CollisionMonsterBottom
+	
+	ldr r0, =mob1_data	
+	bl CollisionMonsterLeftRight
+	
+	pop {lr}
+	bx lr
+
+//==============================================================
+//void CollisionMonsterBottom(int data_pointer)
+//Handle collisions from beneath monster
+//Returns: void 
+//==============================================================
+CollisionMonsterBottom:
+	push {r4, r5, r6, r7, r8, lr}
+	
+	mov r8, r0							//Save data pointer in safe place 
+	
+	ldmia r8, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
+	
+	//FLOOR
+	mov r0, r8 							//Arg1: data_pointer
+	mov r1, #2							//Arg2: Check the bottom 
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	cmp r0, #1							//Has monster hit the floor? 
+	beq CMOB_floor 						//Branch to CMB_floor 
+
+CMOB_drop:
+	//If the monster is falling, then do not change the x direction 
+	sub r4, r6							//monster x = monster x - delta x 
+	mov r6, #0							//Clear delta_x 
+	
+	b CMOB_end							
+	
+CMOB_floor: 
+
+	//Reverse the change made by the update function in the y direction 
+	sub r5, r7							//monster y = monster y - delta y
+	mov r7, #0							//Clear delta_y
+	
+	b CMOB_end							//Branch to CMB_end 
+
+CMOB_end:
+	stmia r8, {r4,r5,r6,r7}				//Update monster x,y,delta x,delta y in memory
+
+	pop {r4, r5, r6, r7, r8, lr}
+	bx lr 
+	
+//==============================================================
+//void CollisionMonsterLeftRight(int data_pointer)
+//Handle collisions on left and right on monster 
+//Returns: void 
+//==============================================================	
+CollisionMonsterLeftRight:
+	push {r4, r5, r6, r7, r8, lr}
+	
+	mov r8, r0							//Store data pointer in safe location 
+	
+	ldmia r8, {r4, r5, r6, r7}			//Load monster x (r4), y (r5), delta x (r6), delta y (r7)
+	
+	//Check if monster hit an impassable object to the left 
+	mov r0, r8							//Arg1: address of data_pointer
+	mov r1, #4							//Arg2: Check the left
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	
+	cmp r0, #1							//Has monster hit something to the left? 
+	beq CMoLR_impassable	 			//Branch to CMoLR_impassable	 
+	
+	//Check if monster hit an impassable object to the right
+	mov r0, r8							//Arg1: address of data_pointer
+	mov r1, #3							//Arg2: Check the right
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	
+	cmp r0, #1							//Has monster hit something to the right?? 
+	beq CMoLR_impassable	 			//Branch to CMoLR_impassable	
+	
+	b CMoLR_end							//Branch to end of the function
+	
+CMoLR_impassable:
+	
+	ldr r0, =cur_mobs			//Get pointer to cur_mobs
+	ldr r0, [r0]				//Get address of set of current mobs  
+	
+	add r0, #4					//Get address of monster direction 
+	
+	ldr r1, [r0]				//Get monster direction
+	cmp r1, #1					//Going right?
+	
+	moveq r1, #-1				//Switch to left 
+	movne r1, #1				//Switch to right 
+	
+	str r1, [r0]				//Store monster direction 
+	
+	//Reverse the change made by the update function in the x direction 
+	sub r4, r6					//monster x = monster x - delta x 
+	mov r6, r1					//switch direction 
+	
+	stmia r8, {r4,r5,r6,r7}				//Update monster x,y,delta x,delta y in memory
+	
+CMoLR_end:
+
+	pop {r4, r5, r6, r7, r8, lr}
+	bx lr 
+
+	

@@ -4,6 +4,8 @@
 .global clearScreen
 .global redrawBlocks
 .global drawRectangle
+.global ReplaceBlockBG
+.global Redraw_Background_X
 //======================================================
 //void moveThing(int thing_pointer) 
 //Draws something in new location.  Clears delta values 
@@ -22,8 +24,15 @@ moveThing:
 	addr 		.req r10 
 	
 	ldmia r0!, {thing_x, thing_y, delta_x, delta_y}
-	mov addr, r0							//Address of  							
-	
+	mov addr, r0							//Address of thing		
+
+	cmp delta_x, #0							//Has thing moved in the x direction? 
+	bne movement 
+									
+	cmp delta_y, #0 						//Has thing moved in either direction? 
+	beq move_end							//Thing has not moved anywhere so do not draw anything 
+
+movement:
 	sub thing_old_x, thing_x, delta_x		//Save thing's old position
 	sub thing_old_y, thing_y, delta_y		//Save thing's old position
 	
@@ -65,9 +74,9 @@ moveThing:
 	
 teleport: 
 	sub r0, thing_old_x, width		//Arg1: x_start 
-	mov r1, thing_old_x					//Arg2: x_end
+	mov r1, thing_old_x				//Arg2: x_end
 	sub r2, thing_old_y, height		//Arg3: y_start 
-	mov r3, thing_old_y					//Arg4: y_end 
+	mov r3, thing_old_y				//Arg4: y_end 
 	
 	bl Redraw_Background_X			//Redraw the background behind thing 
 	
@@ -290,6 +299,11 @@ DrawPixel:
 	ldr	r0, =FrameBufferPointer
 	ldr	r0, [r0]
 	strh	r2, [r0, offset]
+	
+	// store color in the dynamic frame 
+	ldr r1, =dyn_background	//Load address of dynamic background
+	ldr r1, [r1]			//load address of dynamic frame 
+	strh r2, [r1, offset]
 
 	pop		{r4}
 	bx		lr
@@ -408,10 +422,64 @@ rec_next_line:
 	b rec_top
 
 
+//================================================
+//ReplaceBlockBG(block_x, block_y, int bg_pointer, int replace_pointer)
+//Replace a block from the background IN MEMORY
+//r0: x coordinate of the block
+//r1: y coordinate of the block 
+//r2: pointer to the background 
+//r3: pointer to replace the block with 
+//Returns void
+//================================================
+ReplaceBlockBG:
+	push {r4,r5,r6,r7,r8,r9,r10,lr}
 
+	mov	r4,	r0					//Start X position of your picture (changes with each loop)
+	mov	r5,	r1					//Start Y position of the picture  (changes with each loop)
+	
+	mov r10, r2					//Save pointer to the background in a safe location 
+	
+	ldmia r3, {r6, r7, r8}		//Load the address, width and height of the tile to put into the background 
+	
+	add r7, r4					//End x position of the picture 
+	add	r8, r5					//End y position of the picture
+	
+	mov r9, r0					//Start X position (does not change)
+RBBG_Loop:
+	mov	r0,	r4					//passing x for ro which is used by the Draw pixel function 
+	mov	r1,	r5					//passing y for r1 which is used by the Draw pixel formula 
+	ldrh	r2,	[r6],#2			//setting pixel color by loading it from the data section. We load hald word
+	mov r3, r10
+	
+	bl	DrawPixelMemory
+	add	r4,	#1					//increment x position
+	cmp	r4,	r7					//compare with image with
+	blt RBBG_Loop
+	mov	r4,	r9					//reset x
+	add	r5,	#1					//increment Y
+	cmp	r5,	r8					//compare y with image height
+	blt	RBBG_Loop
+	
+	pop    {r4,r5,r6,r7,r8,r9,r10,lr}
+	bx lr 
 
+DrawPixelMemory:
+	push	{r4, lr}
 
+	offset	.req	r4
 
+	// offset = (y * 1024) + x = x + (y << 10)
+	add		offset,	r0, r1, lsl #10
+	// offset *= 2 (for 16 bits per pixel = 2 bytes per pixel)
+	lsl		offset, #1
+
+	// store the colour (half word) at framebuffer pointer + offset
+
+	ldr	r0, [r3]
+	strh	r2, [r0, offset]
+
+	pop		{r4, lr}
+	bx		lr
 
 
 
