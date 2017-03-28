@@ -302,9 +302,9 @@ DrawPixel:
 	strh	r2, [r0, offset]
 	
 	// store color in the dynamic frame 
-	//ldr r1, =dyn_background	//Load address of dynamic background
-	//ldr r1, [r1]			//load address of dynamic frame 
-	//strh r2, [r1, offset]
+	ldr r1, =dyn_background	//Load address of dynamic background
+	ldr r1, [r1]			//load address of dynamic frame 
+	strh r2, [r1, offset]
 
 	pop		{r4}
 	bx		lr
