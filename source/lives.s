@@ -1,24 +1,24 @@
-.global updateScore
-.global renderScore
-.global score
-.global score_changed
+.global updateLives
+.global renderLives
+.global lives
+.global lives_changed
 
 .section .text
 //=========================================
 //Parameters:
 //	r0 - updates the score by the value in r0
 //=========================================
-updateScore:
+updateLives:
 	push {lr}
 
 	//update the score
-	ldr r1, =score
+	ldr r1, =lives
 	ldr r2, [r1]
 	add r2, r0
 	str	r2, [r1]
 	
 	//change score_changed to true
-	ldr r1, =score_changed
+	ldr r1, =lives_changed
 	mov r2, #1					//1 is true, the score changed
 	str r2, [r1]
 	
@@ -28,10 +28,10 @@ updateScore:
 //Renders the score only if the score has
 //changed
 //=======================================
-renderScore:
+renderLives:
 	push {r4-r8, lr}
 	
-	ldr r0, =score_changed
+	ldr r0, =lives_changed
 	ldr r1, [r0]
 	cmp r1, #0					//if score hasn't changed
 	beq return					//then return from function
@@ -41,7 +41,7 @@ renderScore:
 	
 	//Render the score to the screen
 	//Overwrite previous score with blue rectangle first
-	ldr r5, =score_pos
+	ldr r5, =lives_pos
 	ldr r0, [r5]			//x pos
 	ldr r1, [r5, #4]		//y pos
 	ldr r2, =bg_colour
@@ -56,8 +56,8 @@ renderScore:
 	ldr r5, =score
 	ldr r5, [r5]
 mod10:
-	cmp r6, #6
-	bhs print_score				//print if signed less than or equal
+	cmp r6, #2
+	bhs print_lives				//print if signed less than or equal
 	mov r7, #0				//keep adding 10 to r7 until r7 > r5
 	mov r3, #0				//the counter for how many times we add 10 to r7
 store_last_digit:
@@ -80,11 +80,11 @@ store_last_digit:
 	add r6, #1			//counted 1 more digit
 	b mod10
 	
-print_score:
+print_lives:
 	mov r6, #0			//six digits stored on stack, so pop six times
 	
-print_score_loop:
-	cmp r6, #6
+print_lives_loop:
+	cmp r6, #2
 	bhs	return
 	pop {r5}
 	
@@ -119,7 +119,7 @@ print_score_loop:
 	cmp r5, #9
 	ldreq r2, =no_9_pic
 	
-	ldr r4, =score_pos		
+	ldr r4, =lives_pos		
 	ldr r0, [r4]				//x pos
 	ldr r1, [r4, #4]			//y pos				
 	ldr r3, =digit_dimension
@@ -129,16 +129,16 @@ print_score_loop:
 	bl drawPicture
 	
 	add r6, #1	
-	b print_score_loop
+	b print_lives_loop
 	
 return:
 	pop {r4-r8, pc}
 	
 	
 .section .data
-score_changed:			.int 1				//0 false, 1 true
-score:					.int 13
-score_pos:				.int 40, 75			//x, y of where to draw first digit
+lives_changed:			.int 1				//0 false, 1 true
+lives:					.int 13
+lives_pos:				.int 500, 35			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
 bg_colour:				.ascii "\237\224"
 

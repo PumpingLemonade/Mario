@@ -1,6 +1,6 @@
 .global restart_game
 
-
+.section .text
 //=========================================
 //This function resets all the values of 
 //every object in the game to their initial

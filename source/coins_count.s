@@ -1,63 +1,63 @@
-.global updateScore
-.global renderScore
-.global score
-.global score_changed
+.global incrementCoins
+.global renderCoinsCount
+.global test1
 
 .section .text
 //=========================================
-//Parameters:
-//	r0 - updates the score by the value in r0
+//Incrment the coins
 //=========================================
-updateScore:
+incrementCoins:
 	push {lr}
 
 	//update the score
-	ldr r1, =score
+	ldr r1, =coins_count
 	ldr r2, [r1]
-	add r2, r0
+	add r2, #1
 	str	r2, [r1]
 	
 	//change score_changed to true
-	ldr r1, =score_changed
+	ldr r1, =coins_count_changed
 	mov r2, #1					//1 is true, the score changed
 	str r2, [r1]
 	
 	pop {pc}
 	
 //======================================
-//Renders the score only if the score has
+//Renders the coins only if the coins count has
 //changed
 //=======================================
-renderScore:
+renderCoinsCount:
 	push {r4-r8, lr}
 	
-	ldr r0, =score_changed
+	ldr r0, =coins_count_changed
 	ldr r1, [r0]
-	cmp r1, #0					//if score hasn't changed
+	//mov r1, #1
+test1:
+	cmp r1, #0					//if coins count hasn't changed
 	beq return					//then return from function
 	
-	mov r1, #0					//else update score_changed to false
+	mov r1, #0					//else update coins_changed to false
 	str r1, [r0]				//and store it
 	
-	//Render the score to the screen
-	//Overwrite previous score with blue rectangle first
-	ldr r5, =score_pos
+	//Render the coins count to the screen
+	//Overwrite previous coins count with blue rectangle first
+	ldr r5, =coins_pos
 	ldr r0, [r5]			//x pos
 	ldr r1, [r5, #4]		//y pos
 	ldr r2, =bg_colour
 	ldrh r2, [r2]			//colour
-	ldr r3, =190			//width
+	ldr r3, =38			//width
 	ldr r4, =25				//height
 	bl drawRectangle
 	
-	//draw six digits, starting with the ones
+	//draw two digits, starting with the ones
 	mov r4, #10				//mod by 10 to get last digit
-	mov r6, #0				//will mod by 10 6 times to get 6 digits
-	ldr r5, =score
+	mov r6, #0				//will mod by 10 two times to get two digits
+	ldr r5, =coins_count
 	ldr r5, [r5]
 mod10:
-	cmp r6, #6
-	bhs print_score				//print if signed less than or equal
+	cmp r6, #2
+	bhs print_coins_count	//print if signed less than or equal
 	mov r7, #0				//keep adding 10 to r7 until r7 > r5
 	mov r3, #0				//the counter for how many times we add 10 to r7
 store_last_digit:
@@ -80,11 +80,11 @@ store_last_digit:
 	add r6, #1			//counted 1 more digit
 	b mod10
 	
-print_score:
-	mov r6, #0			//six digits stored on stack, so pop six times
+print_coins_count:
+	mov r6, #0			//two digits stored on stack, so pop six times
 	
-print_score_loop:
-	cmp r6, #6
+print_coins_count_loop:
+	cmp r6, #2
 	bhs	return
 	pop {r5}
 	
@@ -119,7 +119,7 @@ print_score_loop:
 	cmp r5, #9
 	ldreq r2, =no_9_pic
 	
-	ldr r4, =score_pos		
+	ldr r4, =coins_pos		
 	ldr r0, [r4]				//x pos
 	ldr r1, [r4, #4]			//y pos				
 	ldr r3, =digit_dimension
@@ -129,18 +129,15 @@ print_score_loop:
 	bl drawPicture
 	
 	add r6, #1	
-	b print_score_loop
+	b print_coins_count_loop
 	
 return:
 	pop {r4-r8, pc}
 	
-	
-.section .data
-score_changed:			.int 1				//0 false, 1 true
-score:					.int 13
-score_pos:				.int 40, 75			//x, y of where to draw first digit
-digit_dimension:		.int 19, 25			//width height of each digit's image
-bg_colour:				.ascii "\237\224"
+
+
+
+
 
 
 

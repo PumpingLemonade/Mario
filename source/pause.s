@@ -1,5 +1,6 @@
 .global pause_menu
 
+.section .text
 pause_menu:
 	push {r5, r8, lr}
 	PREV_BUTTONS .req r8
@@ -171,4 +172,7 @@ resume_option:	.int 385, 268			//x and y of where to draw menu selector
 restart_option:	.int 385, 373
 exit_option:	.int 385, 485
 bg_color:		.ascii "\4\323"
+	
+	
+	
 	
