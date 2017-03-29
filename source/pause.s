@@ -173,6 +173,3 @@ restart_option:	.int 385, 373
 exit_option:	.int 385, 485
 bg_color:		.ascii "\4\323"
 	
-	
-	
-	

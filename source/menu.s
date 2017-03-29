@@ -102,10 +102,3 @@ haltLoop$:
 play_option:	.int 385, 465		//x and y location of play button
 exit_option:	.int 385, 525		//x and y location of exit button
 bg_colour:		.ascii "?l"			//background color sky blue
-
-
-
-
-
-
-

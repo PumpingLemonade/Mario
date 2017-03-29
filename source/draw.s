@@ -6,7 +6,6 @@
 .global drawRectangle
 .global ReplaceBlockBG
 .global Redraw_Background_X
-.global test2
 //======================================================
 //void moveThing(int thing_pointer) 
 //Draws something in new location.  Clears delta values 
