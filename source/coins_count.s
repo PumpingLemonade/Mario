@@ -1,15 +1,19 @@
 .global incrementCoins
 .global renderCoinsCount
+.global renderCoinsTitle
 .global coins_count
 .global coins_count_changed
 .global test1
 
 .section .data
+bg_colour:				.ascii "\237\224"
+.align 4
+
 coins_count:			.int 10
 coins_count_changed:	.int 1				//0 false, 1 true
-coins_pos:				.int 400, 35			//x, y of where to draw first digit
+coins_pos:				.int 400, 40			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
-bg_colour:				.ascii "\237\224"
+
 
 .section .text
 //=========================================
@@ -142,4 +146,20 @@ print_coins_count_loop:
 	
 return:
 	pop {r4-r8, pc}
+	
+	
+renderCoinsTitle:
+	push {lr}
+	ldr r0, =260
+	mov r1, #40
+	ldr r2, =coins_title_pic
+	bl drawPicture
+	pop {pc}
+	
+	
+	
+	
+	
+	
+	
 	

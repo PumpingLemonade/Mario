@@ -47,6 +47,10 @@ play_game:
 	
 	bl drawPicture 
 	
+	bl renderScoreTitle
+	bl renderCoinsTitle
+	bl renderLivesTitle
+	
 game_loop:
 	bl update
 	bl collision
@@ -95,6 +99,7 @@ render:
 
 	bl renderScore
 	bl renderCoinsCount
+	bl renderLives
 
 	
 	pop {lr}

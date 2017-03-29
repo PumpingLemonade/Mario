@@ -1,5 +1,6 @@
 .global updateScore
 .global renderScore
+.global renderScoreTitle
 .global score
 .global score_changed
 
@@ -135,12 +136,23 @@ return:
 	pop {r4-r8, pc}
 	
 	
+renderScoreTitle:
+	push {lr}
+	mov r0, #40					//x pos
+	mov r1, #40					//y pos
+	ldr r2, =score_title_pic
+	bl drawPicture
+	pop {pc}
+	
 .section .data
+bg_colour:				.ascii "\237\224"
+.align 4
+
 score_changed:			.int 1				//0 false, 1 true
 score:					.int 13
 score_pos:				.int 40, 75			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
-bg_colour:				.ascii "\237\224"
+
 
 
 

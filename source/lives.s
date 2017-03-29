@@ -1,5 +1,6 @@
 .global updateLives
 .global renderLives
+.global renderLivesTitle
 .global lives
 .global lives_changed
 
@@ -135,12 +136,24 @@ return:
 	pop {r4-r8, pc}
 	
 	
+renderLivesTitle:
+	push {lr}
+	ldr r0, =508
+	mov r1, #40
+	ldr r2, =lives_title_pic
+	bl drawPicture
+	pop {pc}
+	
+	
 .section .data
-lives_changed:			.int 1				//0 false, 1 true
-lives:					.int 13
-lives_pos:				.int 500, 35			//x, y of where to draw first digit
-digit_dimension:		.int 19, 25			//width height of each digit's image
 bg_colour:				.ascii "\237\224"
+.align 4
+
+lives_changed:			.int 1				//0 false, 1 true
+lives:					.int 3
+lives_pos:				.int 660, 40			//x, y of where to draw first digit
+digit_dimension:		.int 19, 25			//width height of each digit's image
+
 
 
 
