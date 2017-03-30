@@ -1,5 +1,6 @@
 .global menu_select
 
+.section .text
 menu_select:
 	push {r4, r5, lr}
 	mov r5, #0				//r5 stores which selection the player made
@@ -98,6 +99,9 @@ haltLoop$:
 	
 	
 .section .data
+bg_colour:		.ascii "?l"			//background color sky blue
+.align 4
+
 play_option:	.int 385, 465		//x and y location of play button
 exit_option:	.int 385, 525		//x and y location of exit button
-bg_colour:		.ascii "?l"			//background color sky blue
+
