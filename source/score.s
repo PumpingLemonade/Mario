@@ -1,6 +1,7 @@
 .global updateScore
 .global renderScore
 .global score
+.global score_changed
 
 //=========================================
 //Parameters:
