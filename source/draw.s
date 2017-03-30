@@ -6,8 +6,6 @@
 .global drawRectangle
 .global ReplaceBlockBG
 .global Redraw_Background_X
-.global DrawBackground 
-.global ModifyLookup
 //======================================================
 //void moveThing(int thing_pointer) 
 //Draws something in new location.  Clears delta values 
@@ -286,26 +284,16 @@ rb_y_loop_test_0:
  */
 
 DrawPixel:
-	push	{r4, r5}
-	
+	push	{r4}
+
+
 	offset	.req	r4
 
 	// offset = (y * 1024) + x = x + (y << 10)
 	add		offset,	r0, r1, lsl #10
 	// offset *= 2 (for 16 bits per pixel = 2 bytes per pixel)
 	lsl		offset, #1
-	
-	ldr r5, =dyn_background	//Is the color the same as what is already displayed
-	ldr r5, [r5]
-	ldrh r5, [r5, offset]
-	
-	cmp r5, r2
-	beq DP_end 				//Skip drawing 
-	
-	//ldr r5, =pass_color 
-	//ldr r5, [r5]
-	//cmp r2, r5
-	
+
 	// store the colour (half word) at framebuffer pointer + offset
 
 	ldr	r0, =FrameBufferPointer
@@ -317,8 +305,7 @@ DrawPixel:
 	ldr r1, [r1]			//load address of dynamic frame 
 	strh r2, [r1, offset]
 
-DP_end:
-	pop		{r4, r5}
+	pop		{r4}
 	bx		lr
 
 //======================================================
@@ -462,7 +449,7 @@ RBBG_Loop:
 	mov	r0,	r4					//passing x for ro which is used by the Draw pixel function 
 	mov	r1,	r5					//passing y for r1 which is used by the Draw pixel formula 
 	ldrh	r2,	[r6],#2			//setting pixel color by loading it from the data section. We load hald word
-	mov r3, r10					//Pointer to the background
+	mov r3, r10
 	
 	bl	DrawPixelMemory
 	add	r4,	#1					//increment x position
@@ -495,213 +482,6 @@ DrawPixelMemory:
 	bx		lr
 
 
-
-//================================================
-//DrawBackground(tile array, background_addr, block_addr)
-//A substitution function that reads the tile array, and then draws the appropriate block to the background.  
-//r0: address of the tile array 
-//r1: address of the the background to draw 
-//r2: address of the blocks associated with the current background
-//Returns: void  
-//================================================
-DrawBackground:
-
-	push {r4, r5, r6, r7, r8, r9, r10, lr}
-
-	mov r4, #0			//x index for tile array
-	mov r5, #0			//y index for tile array
-	mov r6, r0 			//tile array pointer 
-	mov r8, r1			//background pointer 
-	mov r9, r2			//block pointer 
-	
-	b DBG_loop_test_y
-	
-DBG_loop_y:
-
-	mov r4, #0			//reset x index to start 
-	b DBG_loop_test_x 	//check x 
-
-DBG_loop_x:	
-
-	//Get the offset in the tile array 
-	mov r0, #32			
-	mul r7, r5, r0
-	add r7, r4 
-	
-	lsl r7, #2 
-	
-	//Read number from tile array
-	ldr r3, [r6, r7]
-	
-	lsl r0, r4, #5		//Arg1: Every block is 32 pixels wide so shift 32 to get x location 
-	lsl r1, r5, #5		//Arg2: Every block is 32 pixels high so shift 32 to get y location 
-	
-	//0: Sky block
-	cmp r3, #0 
-	beq DBG_sky
-	
-	//1: Ground block
-	cmp r3, #1
-	beq DBG_ground
-	
-	//2: Question box 
-	cmp r3, #2
-	beq DBG_qbox 
-	
-	//3: Wood box  
-	cmp r3, #3
-	beq DBG_wbox 
-	
-	//4: Stair box 
-	cmp r3, #4
-	beq DBG_sbox 
-	
-	//5: After question box 
-	cmp r3, #5
-	beq DBG_qbox_after
-	
-	//11
-	cmp r3, #11
-	beq DBG_small_pipe
-	
-	//12
-	cmp r3, #12
-	beq DBG_medium_pipe
-	
-	//13
-	cmp r3, #13
-	beq DBG_large_pipe
-	
-	//21
-	cmp r3, #21
-	beq DBG_cloud_single
-	
-	//22
-	cmp r3, #22
-	beq DBG_cloud_double
-	
-	//23
-	cmp r3, #23
-	beq DBG_cloud_triple
-	
-	b DBG_loop_x_end
-	
-DBG_sky:
-	//Write a skyblock in memory 
-	ldr r2, =sky_pic	//Arg4: pointer to picture to draw 
-	bl drawPicture 
-	
-	b DBG_loop_x_end
-	
-DBG_ground:
-	//Write a ground block in memory
-	ldr r2, =ground_box_pic	//Arg4: pointer to picture to draw 
-	bl drawPicture
-	
-	b DBG_loop_x_end
-	
-DBG_qbox:
-
-	ldr r2, =qbox_pic	//Arg4: pointer to picture to draw 
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_wbox:
-
-	ldr r2, =wbox_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-	
-DBG_sbox:
-	ldr r2, =sbox_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-	
-DBG_qbox_after:
-	ldr r2, =qbox_after_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_small_pipe:
-	ldr r2, =pipe_small_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_medium_pipe:
-	ldr r2, =pipe_medium_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_large_pipe:
-	ldr r2, =pipe_large_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_cloud_single:
-	ldr r2, =cloud_single_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_cloud_double:
-	ldr r2, =cloud_double_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_cloud_triple:
-	ldr r2, =cloud_triple_pic
-	bl drawPicture
-	
-	b DBG_loop_x_end
-
-DBG_loop_x_end:
-	add r4, #1 
-	
-DBG_loop_test_x:
-
-	cmp r4, #32 
-	blt DBG_loop_x 
-	add r5, #1 
-	
-DBG_loop_test_y:
-
-	cmp r5, #24 
-	blt DBG_loop_y 
-	
-	pop {r4, r5, r6, r7, r8, r9, r10, lr}
-	bx lr 
-
-//=====================================================================
-//void ModifyLookup(int lookup_pointer, int x, int y, int new_value)
-//modifity a value in the lookup data 
-//r0: pointer to lookup 
-//r1: x position
-//r2: y position
-//r3: new value to put in (x,y) in lookup table 
-//=====================================================================
-ModifyLookup:
-	push {r4, r5, lr}
-	
-	//Get the offset in the tile array 
-	mov r4, #32			
-	mul r5, r2, r4
-	add r5, r1 
-	
-	str r3, [r0, r5]
-	
-ML_end:
-	pop {r4, r5, lr}
-	bx lr 
-
-	
 
 
 

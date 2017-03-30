@@ -6,7 +6,6 @@
 .global test1
 
 .section .data
-.align 4
 bg_colour:				.ascii "\237\224"
 .align 4
 
@@ -23,15 +22,15 @@ digit_dimension:		.int 19, 25			//width height of each digit's image
 incrementCoins:
 	push {lr}
 
-	//update the coins count
+	//update the score
 	ldr r1, =coins_count
 	ldr r2, [r1]
 	add r2, #1
 	str	r2, [r1]
 	
-	//change coins count_changed to true
+	//change score_changed to true
 	ldr r1, =coins_count_changed
-	mov r2, #1					//1 is true, the coins count changed
+	mov r2, #1					//1 is true, the score changed
 	str r2, [r1]
 	
 	pop {pc}

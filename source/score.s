@@ -145,7 +145,6 @@ renderScoreTitle:
 	pop {pc}
 	
 .section .data
-.align 4
 bg_colour:				.ascii "\237\224"
 .align 4
 

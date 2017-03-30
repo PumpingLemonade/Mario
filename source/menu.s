@@ -99,7 +99,6 @@ haltLoop$:
 	
 	
 .section .data
-.align 4
 bg_colour:		.ascii "?l"			//background color sky blue
 .align 4
 

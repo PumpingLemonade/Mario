@@ -7,26 +7,26 @@
 .section .text
 //=========================================
 //Parameters:
-//	r0 - updates the lives by the value in r0
+//	r0 - updates the score by the value in r0
 //=========================================
 updateLives:
 	push {lr}
 
-	//update the lives
+	//update the score
 	ldr r1, =lives
 	ldr r2, [r1]
 	add r2, r0
 	str	r2, [r1]
 	
-	//change lives_changed to true
+	//change score_changed to true
 	ldr r1, =lives_changed
-	mov r2, #1					//1 is true, the lives changed
+	mov r2, #1					//1 is true, the score changed
 	str r2, [r1]
 	
 	pop {pc}
 	
 //======================================
-//Renders the lives only if the lives has
+//Renders the score only if the score has
 //changed
 //=======================================
 renderLives:
@@ -34,14 +34,14 @@ renderLives:
 	
 	ldr r0, =lives_changed
 	ldr r1, [r0]
-	cmp r1, #0					//if lives hasn't changed
+	cmp r1, #0					//if score hasn't changed
 	beq return					//then return from function
 	
-	mov r1, #0					//else update lives_changed to false
+	mov r1, #0					//else update score_changed to false
 	str r1, [r0]				//and store it
 	
-	//Render the lives to the screen
-	//Overwrite previous lives with blue rectangle first
+	//Render the score to the screen
+	//Overwrite previous score with blue rectangle first
 	ldr r5, =lives_pos
 	ldr r0, [r5]			//x pos
 	ldr r1, [r5, #4]		//y pos
@@ -54,7 +54,7 @@ renderLives:
 	//draw six digits, starting with the ones
 	mov r4, #10				//mod by 10 to get last digit
 	mov r6, #0				//will mod by 10 6 times to get 6 digits
-	ldr r5, =lives
+	ldr r5, =score
 	ldr r5, [r5]
 mod10:
 	cmp r6, #2
@@ -146,7 +146,6 @@ renderLivesTitle:
 	
 	
 .section .data
-.align 4
 bg_colour:				.ascii "\237\224"
 .align 4
 

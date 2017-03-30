@@ -36,7 +36,7 @@ jumping:
 	blgt endJump		//End Mario's jump	
 	bgt move_left_right	//Branch to move_left_right 
 	
-	mov r5, #-2			//delta_y = -1   
+	mov r5, #-1			//delta_y = -1   
 	
 	add r1, #1			//increment jump count 
 	str r1, [r0]		//Store updated jump_count 
@@ -57,7 +57,7 @@ check_A:
 	str r0, [r2]		//Update jump_flag in memory 
 	
 	ldr r7, =jump_height//Get address of jump_height 
-	mov r0, #90			//Set jump height to 180 pixels 
+	mov r0, #180		//Set jump height to 180 pixels 
 	str r0, [r7]
 	
 	b move_left_right	//Branch to move_left_right
@@ -71,7 +71,7 @@ check_START:
 	
 falling:
 
-	mov r5, #2			//delta_y = 1 
+	mov r5, #1			//delta_y = 1 
 	
 move_left_right: 
 
@@ -81,11 +81,11 @@ move_left_right:
 	
 	// check if right button pressed
 	tst r4, #0x80		//1000 0000b
-	movne r2, #2		//Arg0: delta x = 1
+	movne r2, #1		//Arg0: delta x = 1
 
 	// check if left button pressed
 	tst r4, #0x40		//0100 0000b
-	movne r2, #-2 		//Arg0: delta x = -1		
+	movne r2, #-1 		//Arg0: delta x = -1		
 	
 	mov r3, r5			//Arg1: delta y 
 	
