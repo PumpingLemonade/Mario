@@ -17,17 +17,6 @@ main:
 	bl		InitGPIOSNES
 	
 	mov 	r10, #0
-
-color:
-//CHECK COLOR DEBUG
-	ldr 	r4, =sample
-	ldrh 	r5, [r4], #2 
-	ldrh 	r6, [r4], #2 
-	ldrh 	r7, [r4], #2 
-	ldrh 	r8, [r4], #2 
-	ldrh 	r9, [r4]
-
-//CHECK COLOR DEBUG_END 
 	
 	bl 		clearScreen
 
@@ -41,11 +30,29 @@ start_screen:
 	bl menu_select			//user selects either play or exit
 
 play_game:
-	mov r0, #0				//Arg1: x location to start drawing background
-	mov r1, #0				//Arg2: y location to start drawing background 
-	ldr r2, =background_1 	//Arg3: pointer to the structure containing the image data 
+
+	ldr r0, =bg_lookup_1
+	ldr r1, =background_1 
+	ldr r2, =blocks_1 
+	bl DrawBackground 
 	
-	bl drawPicture 
+	//copy dynamic frame into the current background 
+	mov r0, #0
+	mov r1, #0
+	ldr r2, =background_1 
+	ldr r3, =dyn_background
+	bl ReplaceBlockBG
+	
+color:
+//CHECK COLOR DEBUG
+	//ldr 	r4, =sample
+	//ldrh 	r5, [r4], #2 
+	//ldrh 	r6, [r4], #2 
+	//ldrh 	r7, [r4], #2 
+	//ldrh 	r8, [r4], #2 
+	//ldrh 	r9, [r4]
+
+//CHECK COLOR DEBUG_END 
 	
 game_loop:
 	bl update
@@ -85,6 +92,8 @@ collision:
 render: 
 	push {lr}
 	
+	bl RenderBackground 
+	
 	ldr r0, =mario_data 
 	bl moveThing 
 
@@ -94,7 +103,6 @@ render:
 	bl RenderCoin					//Render the coin if necessary 
 
 	bl renderScore
-
 	
 	pop {lr}
 	bx lr 

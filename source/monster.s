@@ -44,7 +44,7 @@ MonsterUpdate:
 	
 	ldr r0, =mob1_data			//Arg1: mob1_data
 	mov r1, r5 					//Arg2: delta_x 
-	mov r2, #1					//Arg3: delta_y (gravity)
+	mov r2, #2					//Arg3: delta_y (gravity)
 	bl moveMonster				//Call moveMonster
 	
 MoU_end:
