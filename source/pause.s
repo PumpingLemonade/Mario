@@ -185,6 +185,7 @@ drawBackground:
 	pop {pc}
 	
 .section .data
+.align 4
 bg_color:		.ascii "\4\323"
 .align 4
 
