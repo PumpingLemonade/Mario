@@ -9,13 +9,19 @@ _start:
 
 
 main:
-    mov     sp, #0x8000
-	
+/*
+	mov r0, #0xD2		//1101 0010b - IRQ mode
+	msr cpsr_c, r0		//set to irq so that it's lr is always used
+	*/
+
+    bl 		InstallIntTable
+    
 	bl		EnableJTAG
 
 	bl		InitFrameBuffer
 	bl		InitGPIOSNES
 	
+	bl 		EnableC1IRQ
 	mov 	r10, #0
 
 color:
@@ -71,6 +77,11 @@ update:
 	bl MarioUpdate
 	bl MonsterUpdate
 	
+	ldr r0, =spawn_value_pack
+	ldr r0, [r0]
+	cmp r0, #0
+	bleq setValuePackPos
+	
 update_end:
 	pop {lr}
 	bx lr 
@@ -88,7 +99,7 @@ collision:
 
 render: 
 	push {lr}
-	
+			
 	ldr r0, =mario_data 
 	bl moveThing 
 
@@ -100,10 +111,11 @@ render:
 	bl renderScore
 	bl renderCoinsCount
 	bl renderLives
-
-	
+	bl renderValuePack				//only renders once in the time interval
+		
 	pop {lr}
 	bx lr 
+
 
 
 
