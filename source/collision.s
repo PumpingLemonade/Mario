@@ -229,8 +229,9 @@ CCC_top_bottom:
 	x_pos_end		.req r10 	
 	sub x_pos_end, x_pos, width  		//Last x position to check 
 	
-	add x_pos_end, #1					//Do not check bottom left corner 
-	sub x_pos, #1						//Do not check bottom right corner 
+	cmp r1, #1							//Is it the top?
+	addeq x_pos_end, #1					//Do not check bottom left corner 
+	subeq x_pos, #1						//Do not check bottom right corner 
 	
 	b CCC_top_bottom_loop_test			//Branch to CCC_top_loop_test
 	
@@ -360,6 +361,9 @@ CMB_monster:
 	str r0, [r1]						//Update jump height in memory 
 	
 	bl killCurMonster					//Kill current monster
+	
+	mov r0, #100						//Add 100 to the score 
+	bl updateScore
 
 	b CMB_end 
 
@@ -393,6 +397,19 @@ CollisionMarioLeftRight:
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
 	
+	//Set a flag to move to the next background
+	ldr r0, =0x3FF						//Decimal 1023 
+	cmp r4, r0
+	ldrge r0, =background_flag 
+	movge r1, #1 
+	strge r1, [r0]						//Set background flag in memory 
+	
+	//Set a flag to move to the previous background 
+	cmp r4, #31
+	ldrle r0, =background_flag 
+	movle r1, #-1 
+	strle r1, [r0]						//Set background flag in memory
+	
 	//Check if mario hit an impassable object to the left 
 	ldr r0, =mario_data 				//Arg1: address of mario_data
 	mov r1, #4							//Arg2: Check the left
@@ -409,6 +426,22 @@ CollisionMarioLeftRight:
 	cmp r0, #1							//Has mario hit the floor? 
 	beq CMLR_impassable	 				//Branch to CMLR_impassable	
 	
+	//Check if mario hit a monster 
+	ldr r0, =mario_data					//Arg1: address of mario data 
+	mov r1, #3							//Arg2: check right
+	bl isMonsterHit						//Has mario hit a monster?
+	cmp r0, #1							
+	beq CMLR_mario_dead					//Branch CMB_monster
+	
+	//Check if mario hit a monster 
+	ldr r0, =mario_data					//Arg1: address of mario data 
+	mov r1, #4							//Arg2: check left 
+	bl isMonsterHit						//Has mario hit a monster?
+	cmp r0, #1							
+	beq CMLR_mario_dead					//Branch CMB_monster
+	
+	//If we are at the end of the screen, move to the next screen 
+	
 	b CMLR_end							//Branch to end of the function
 
 CMLR_impassable:
@@ -417,6 +450,19 @@ CMLR_impassable:
 	sub r4, r6							//Mario x = mario x - delta x 
 	mov r6, #0							//Clear delta x 
 	
+	ldr r0, =mario_data					//Get address of mario_data 
+	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
+	
+	b CMLR_end
+
+CMLR_mario_dead:
+	sub r4, r6
+	sub r5, r7
+	rsb r6, r4, #100
+	rsb r7, r5,	#500
+	mov r4, #100						//Set mario's original position
+	mov r5,	#500						//Set mario's original position 
+
 	ldr r0, =mario_data					//Get address of mario_data 
 	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
 
@@ -498,16 +544,33 @@ CB_block_found:
 CB_qbox:
 	mov r0, box_x_pos 				//Arg1: x position to start draw from 
 	mov r1, box_y_pos 				//Arg2: y position to start draw from 
-	ldr r2, =stair_box_pic			//Arg3: picture to draw 
+	ldr r2, =qbox_after_pic			//Arg3: picture to draw 
 	
 	bl drawPicture					//Call drawPicture 
 	
 	mov r0, #2
-	str r0, [r9, #-4] 				//Set box type to solid 
+	str r0, [r9, #-4] 			//Set box type to solid 
+	
+	mov r0,	box_x_pos				//Arg1: x position
+	mov r1,	box_y_pos				//Arg2: y position
+	ldr r2, =cur_background		
+	ldr r2, [r2]					//Arg3: background 
+	ldr r3, =qbox_after_pic 		//Arg4: picture to insert into background 
+	bl ReplaceBlockBG 				//Delete the box from the background 
+	
+	ldr r0, =cur_lookup				//Arg1: current lookup table 
+	ldr r0, [r0]
+	lsr r1,	box_x_pos, #5			//Arg2: x position
+	lsr r2,	box_y_pos, #5			//Arg3: y position
+	mov r3, #5
+	//bl ModifyLookup
 	
 	mov r0, box_x_pos				//Arg1: x position
 	mov r1, box_y_pos				//Arg2: y position
 	bl coinInit						//Call coinInit
+	
+	mov r0, #50						//Add 50 to the score 
+	bl updateScore					//Update score 
 	
 	b CB_end 						//Branch to end 
 
@@ -519,8 +582,8 @@ CB_wbox:
 	
 	bl drawPicture					//Call drawPicture 
 	
-	mov r0, #0
-	str r0, [r9] 					//Set box status to destroyed
+	//mov r0, #0
+	//str r0, [r9] 					//Set box status to destroyed
 	
 	mov r0,	box_x_pos				//Arg1: x position
 	mov r1,	box_y_pos				//Arg2: y position
@@ -528,6 +591,13 @@ CB_wbox:
 	ldr r2, [r2]					//Arg3: background 
 	ldr r3, =sky_pic 				//Arg4: picture to insert into background 
 	bl ReplaceBlockBG 				//Delete the box from the background 
+	
+	ldr r0, =cur_lookup				//Arg1: current lookup table 
+	ldr r0, [r0]
+	lsr r1,	box_x_pos, #5			//Arg2: x position
+	lsr r2,	box_y_pos, #5			//Arg3: y position
+	mov r3, #0						//Arg4: sky box 
+	//bl ModifyLookup
 	
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
@@ -563,7 +633,7 @@ isCollisionImpassable:
 
 	//Check Pink
 	mov r0, r4							//Arg1: address of mario_data
-	mov r1, r6							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: direction to check 
 	ldr r2, =ground_color_1				
 	ldr r2, [r2]						//Arg3: Check pink
 	bl CollisionColorCheck
@@ -573,7 +643,7 @@ isCollisionImpassable:
 	
 	//Check Black
 	mov r0, r4							//Arg1: address of mario_data
-	mov r1, r6							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: direction to check 
 	ldr r2, =impassable_color			
 	ldr r2, [r2]						//Arg3: Check black 
 	bl CollisionColorCheck
@@ -583,7 +653,7 @@ isCollisionImpassable:
 	
 	//Check Brown 
 	mov r0, r4							//Arg1: address of sprite_data
-	mov r1, r6							//Arg2: Check the bottom
+	mov r1, r6							//Arg2: direction to check 
 	ldr r2, =ground_color_2				
 	ldr r2, [r2]						//Arg3: Check brown
 	bl CollisionColorCheck

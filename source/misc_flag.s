@@ -47,5 +47,10 @@ coinInit:
 	
 	pop {r4, r5, lr}
 	bx lr 
-	
+
+//===========================================
+//void setNextBackground(int change)
+//set flag to change the background 
+//r0: change in the background number 
+//===========================================
 
