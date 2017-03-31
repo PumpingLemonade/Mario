@@ -119,7 +119,6 @@ render:
 	bl RenderCoin					//Render the coin if necessary 
 
 	bl renderScore
-
 	bl renderCoinsCount
 	bl renderLives
 	//bl renderValuePack				//only renders once in the time interval

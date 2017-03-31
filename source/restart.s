@@ -38,5 +38,29 @@ restart_game:
 	//reset lives
 	mov r0, #3
 	bl setLives
+	
+	//Reset background to background 1
+	ldr r0, cur_lookup
+	ldr r1, background_1
+	str r1, [r0]
+	
+	ldr r0, cur_background
+	ldr r1, background_1
+	str r1, [r0]
+	
+	ldr r0, cur_blocks
+	ldr r1, blocks_1
+	str r1, [r0]
+	
+	/*//reset background to background_1
+	ldr r1, =cur_background_idx
+	ldr r0, [r1]
+	sub r0, #1
+	not r0
+	add r0, #1			//r0 == -cur_background_idx + 1
+	ldr r0, =background_flag
+	str r1, [r0]
+	*/
+	
 		
 	pop {r4-r7, pc}

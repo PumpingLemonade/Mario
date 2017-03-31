@@ -157,11 +157,18 @@ cover_selector:
 //==========================================
 drawBackground:
 	push {lr}
-	mov r0, #0						//x pos
+/*	mov r0, #0						//x pos
 	mov r1, #0						//y pos
 	ldr r2, =cur_background			//data structure for background
 	ldr r2, [r2]					//r2 point to structure for current bg
 	bl drawPicture
+	*/
+	//bl RenderBackground
+	//Redraw the current background
+	ldr r0, =cur_lookup
+	ldr r1, =cur_background
+	ldr r2, =cur_blocks
+	bl DrawBackground				//in draw.s
 	
 	bl renderScoreTitle
 	bl renderCoinsTitle
