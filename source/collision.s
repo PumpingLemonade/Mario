@@ -571,6 +571,7 @@ CB_qbox:
 	
 	mov r0, #50						//Add 50 to the score 
 	bl updateScore					//Update score 
+	bl incrementCoins				//add 1 coin
 	
 	b CB_end 						//Branch to end 
 

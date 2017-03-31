@@ -28,30 +28,15 @@ restart_game:
 	str r1, [r0]
 	
 	//reset score
-	ldr r0, =score
-	mov r1, #0					//reset score to 0
-	str r1, [r0]
-	
-	ldr r0, =score_changed
-	mov r1, #1					//1 is true for score_changed
-	str r1, [r0]
+	mov r0, #0
+	bl setScore
 	
 	//reset coins count
-	ldr r0, =coins_count
-	mov r1, #0					//reset coins to 0
-	str r1, [r0]
-	
-	ldr r0, =coins_count_changed
-	mov r1, #1					//1 is true for coins_changed
-	str r1, [r0]
+	mov r0, #0
+	bl setCoinsCount
 	
 	//reset lives
-	ldr r0, =lives
-	mov r1, #3					//reset lives to 3
-	str r1, [r0]
-	
-	ldr r0, =lives_changed
-	mov r1, #1					//1 is true for lives_changed
-	str r1, [r0]
+	mov r0, #3
+	bl setLives
 		
 	pop {r4-r7, pc}

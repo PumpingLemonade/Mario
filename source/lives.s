@@ -1,32 +1,51 @@
-.global updateLives
+.global decrementLives
 .global renderLives
 .global renderLivesTitle
 .global lives
 .global lives_changed
+.global setLives
 
 .section .text
 //=========================================
-//Parameters:
-//	r0 - updates the score by the value in r0
+//decrements the lives by 1
 //=========================================
-updateLives:
+decrementLives:
 	push {lr}
 
-	//update the score
+	//update the lives
 	ldr r1, =lives
 	ldr r2, [r1]
-	add r2, r0
+	sub r2, #1
 	str	r2, [r1]
 	
-	//change score_changed to true
+	//change lives_changed to true
 	ldr r1, =lives_changed
-	mov r2, #1					//1 is true, the score changed
+	mov r2, #1					//1 is true, the lives changed
 	str r2, [r1]
 	
 	pop {pc}
 	
+//===================================
+//sets the lives to the value in r0
+//and automatically sets lives changed to true
+//==================================
+setLives:
+	push {lr}
+
+	//update the lives
+	ldr r1, =lives
+	str	r0, [r1]
+	
+	//change lives_changed to true
+	ldr r1, =lives_changed
+	mov r2, #1					//1 is true, the lives changed
+	str r2, [r1]
+	
+	pop {pc}
+
+	
 //======================================
-//Renders the score only if the score has
+//Renders the lives only if the lives has
 //changed
 //=======================================
 renderLives:
@@ -34,14 +53,14 @@ renderLives:
 	
 	ldr r0, =lives_changed
 	ldr r1, [r0]
-	cmp r1, #0					//if score hasn't changed
+	cmp r1, #0					//if lives hasn't changed
 	beq return					//then return from function
 	
-	mov r1, #0					//else update score_changed to false
+	mov r1, #0					//else update lives_changed to false
 	str r1, [r0]				//and store it
 	
-	//Render the score to the screen
-	//Overwrite previous score with blue rectangle first
+	//Render the lives to the screen
+	//Overwrite previous lives with blue rectangle first
 	ldr r5, =lives_pos
 	ldr r0, [r5]			//x pos
 	ldr r1, [r5, #4]		//y pos
@@ -54,7 +73,7 @@ renderLives:
 	//draw six digits, starting with the ones
 	mov r4, #10				//mod by 10 to get last digit
 	mov r6, #0				//will mod by 10 6 times to get 6 digits
-	ldr r5, =score
+	ldr r5, =lives
 	ldr r5, [r5]
 mod10:
 	cmp r6, #2

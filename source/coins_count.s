@@ -1,15 +1,15 @@
 .global incrementCoins
+.global setCoinsCount
 .global renderCoinsCount
 .global renderCoinsTitle
 .global coins_count
 .global coins_count_changed
-.global test1
 
 .section .data
 bg_colour:				.ascii "\237\224"
 .align 4
 
-coins_count:			.int 10
+coins_count:			.int 0
 coins_count_changed:	.int 1				//0 false, 1 true
 coins_pos:				.int 400, 40			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
@@ -34,6 +34,24 @@ incrementCoins:
 	str r2, [r1]
 	
 	pop {pc}
+	
+//===================================
+//sets the coins count to the value in r0
+//and automatically sets coins count changed to true
+//==================================
+setCoinsCount:
+	push {lr}
+
+	//update the lives
+	ldr r1, =coins_count
+	str	r0, [r1]
+	
+	//change lives_changed to true
+	ldr r1, =coins_count_changed
+	mov r2, #1					//1 is true, the lives changed
+	str r2, [r1]
+	
+	pop {pc}	
 	
 //======================================
 //Renders the coins only if the coins count has

@@ -1,6 +1,7 @@
 .global updateScore
 .global renderScore
 .global renderScoreTitle
+.global setScore
 .global score
 .global score_changed
 
@@ -24,6 +25,24 @@ updateScore:
 	str r2, [r1]
 	
 	pop {pc}
+	
+//===================================
+//sets the score to the value in r0
+//and automatically sets lives changed to true
+//==================================
+setScore:
+	push {lr}
+
+	//update the score
+	ldr r1, =score
+	str	r0, [r1]
+	
+	//change score_changed to true
+	ldr r1, =score_changed
+	mov r2, #1					//1 is true, the score changed
+	str r2, [r1]
+	
+	pop {pc}	
 	
 //======================================
 //Renders the score only if the score has
@@ -149,7 +168,7 @@ bg_colour:				.ascii "\237\224"
 .align 4
 
 score_changed:			.int 1				//0 false, 1 true
-score:					.int 13
+score:					.int 0
 score_pos:				.int 40, 75			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
 
