@@ -103,6 +103,12 @@ update:
 	bl MarioUpdate
 	bl MonsterUpdate
 	
+	bl CheckGameOver	//check if mario lost all his lives
+	bl CheckGameWin		//check if mario made it to the end
+	
+	//Check if mario is on the last screen and if his x
+	//is greater than the flag pole
+	
 	/*ldr r0, =spawn_value_pack
 	ldr r0, [r0]
 	cmp r0, #0
