@@ -912,7 +912,6 @@ CollisionMarioDead:
 	
 	bl decrementLives					//Decrement number of lives 
 
-	bl decrementLives					//decrease mario's life by 1
 	pop {r4, r5, r6, r7, lr}
 	bx lr 
 	

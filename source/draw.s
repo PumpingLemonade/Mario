@@ -367,7 +367,7 @@ clearScreen:
 
 	mov	r4,	#0			//x value
 	mov	r5,	#0			//Y value
-	ldr	r6,	=0x0000		//black color
+	ldr	r6,	=0x0001		//black color
 	ldr	r7,	=1023		//Width of screen
 	ldr	r8,	=767		//Height of the screen
 	

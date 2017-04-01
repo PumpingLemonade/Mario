@@ -75,6 +75,7 @@ renderLives:
 	mov r6, #0				//will mod by 10 6 times to get 6 digits
 	ldr r5, =lives
 	ldr r5, [r5]
+
 mod10:
 	cmp r6, #2
 	bhs print_lives				//print if signed less than or equal
