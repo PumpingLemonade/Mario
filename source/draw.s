@@ -302,8 +302,8 @@ DrawPixel:
 	
 	// store the colour (half word) at framebuffer pointer + offset
 DP_normal:
-
-	//Is the color the same as what is already displayed
+	//ldr r0, =dyn_background	//Is the color the same as what is already displayed
+	//ldr r1, [r0]
 	ldr r1, =dyn_frame
 	ldrh r5, [r1, offset]
 	
@@ -315,6 +315,8 @@ DP_normal:
 	strh	r2, [r0, offset]
 	
 	// store color in the dynamic frame 
+	//ldr r1, =dyn_background	//Load address of dynamic background
+	//ldr r1, [r1]			//load address of dynamic frame 
 	strh r2, [r1, offset]
 
 DP_end:
