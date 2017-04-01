@@ -407,8 +407,8 @@ CollisionMarioLeftRight:
 	ldr r0, =0x3FF						//Decimal 1023 
 	cmp r4, r0
 	ldrge r0, =background_flag 
-	movge r1, #1 
-	strge r1, [r0]						//Set background flag in memory
+	movge r2, #1 
+	strge r2, [r0]						//Set background flag in memory
 	
 	ldrge r0, =background_changed		//Let the renderer know that the background should change
 	movge r1, #0
@@ -419,8 +419,8 @@ CollisionMarioLeftRight:
 	//Set a flag to move to the previous background 
 	cmp r4, #31
 	ldrle r0, =background_flag 
-	movle r1, #-1 
-	strle r1, [r0]						//Set background flag in memory
+	movle r2, #-1 
+	strle r2, [r0]						//Set background flag in memory
 
 	ldrle r0, =background_changed		//Let the renderer know that the background should change
 	movge r1, #0
@@ -476,19 +476,22 @@ CMLR_impassable:
 
 CMLR_dif_screen:
 	//Did mario move to the previous screen or the next screen
-	cmp r4, #0
+	cmp r2, #0
 	ldr r0, =mario_data 
 	
 	//If Mario moved to the next screen, set him at the start of the next screen 
-	ldrgt r1, =0xC9	//decimal 201
-	ldrgt r2, =0x1F5	//decimal 501
+	ldrgt r1, =0x21		//decimal 33
+	ldrgt r2, =0x29F	//decimal 671
 	
 	//If Mario moved to the last screen, set him at the end of that screen
-	ldrlt r1, =0x3D5	//decimal 981
-	ldrlt r2, =0x1F5	//decmial 501 
+	ldrlt r1, =0x3F3	//decimal 1011
+	ldrlt r2, =0x29F	//decmial 671 
 	
 	//Make Mario appear the the left of the screen again
 	stmia r0, {r1, r2} 
+	
+	//End Mario's jump if he is jumping 
+	bl endJump
 	
 	b CMLR_end
 

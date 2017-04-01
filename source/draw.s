@@ -295,26 +295,26 @@ DrawPixel:
 	// offset *= 2 (for 16 bits per pixel = 2 bytes per pixel)
 	lsl		offset, #1
 	
-	ldr r5, =dyn_background	//Is the color the same as what is already displayed
-	ldr r5, [r5]
-	ldrh r5, [r5, offset]
+	cmp r2, #0xA			//Sprite's back ground color.  Draw background instead if we see this color 
+	bne DP_normal
+	ldr r5, =bg_1 
+	ldrh r2, [r5, offset]
+	
+	// store the colour (half word) at framebuffer pointer + offset
+DP_normal:
+
+	//Is the color the same as what is already displayed
+	ldr r1, =dyn_frame
+	ldrh r5, [r1, offset]
 	
 	cmp r5, r2
 	beq DP_end 				//Skip drawing 
-	
-	//ldr r5, =pass_color 
-	//ldr r5, [r5]
-	//cmp r2, r5
-	
-	// store the colour (half word) at framebuffer pointer + offset
 
 	ldr	r0, =FrameBufferPointer
 	ldr	r0, [r0]
 	strh	r2, [r0, offset]
 	
 	// store color in the dynamic frame 
-	ldr r1, =dyn_background	//Load address of dynamic background
-	ldr r1, [r1]			//load address of dynamic frame 
 	strh r2, [r1, offset]
 
 DP_end:
