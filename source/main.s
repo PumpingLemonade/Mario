@@ -70,12 +70,12 @@ play_game:
 	*/
 color:
 //CHECK COLOR DEBUG
-	//ldr 	r4, =sample
-	//ldrh 	r5, [r4], #2 
-	//ldrh 	r6, [r4], #2 
-	//ldrh 	r7, [r4], #2 
-	//ldrh 	r8, [r4], #2 
-	//ldrh 	r9, [r4]
+//	ldr 	r4, =sample
+//	ldrh 	r5, [r4], #2 
+//	ldrh 	r6, [r4], #2 
+//	ldrh 	r7, [r4], #2 
+//	ldrh 	r8, [r4], #2 
+//	ldrh 	r9, [r4]
 
 //CHECK COLOR DEBUG_END 
 	
@@ -116,7 +116,7 @@ collision:
 	push {lr}
 	
 	bl CollisionMarioBottom			//Handle bottom collisions
-	bl CollisionMarioLeftRight		//Handle right left collisions 
+	bl CollisionMarioLeftRight		//Handle right left collisions 	
 	bl CollisionMarioTop
 	bl CollisionMonster				//Handle monster collisions 
 	

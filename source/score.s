@@ -173,5 +173,3 @@ score_pos:				.int 40, 75			//x, y of where to draw first digit
 digit_dimension:		.int 19, 25			//width height of each digit's image
 
 
-
-

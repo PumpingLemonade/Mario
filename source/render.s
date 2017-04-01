@@ -113,7 +113,7 @@ RenderBackground:
 	//Update mobs in memory 
 	
 	ldr r6, =cur_mobs
-	ldr r7, =lookup_array
+	ldr r7, =mob_array
 	ldr r8, [r7, r5, LSL#2]
 	
 	str r8, [r6]
@@ -159,20 +159,24 @@ RenderBackground:
 	//Set the mob's position
 	ldr r0, =mob1_data
 	
-	ldr r1, =cur_mobs 	//Get pointer to current mobs 
+	ldr r1, =cur_mobs 		//Get pointer to current mobs 
 	ldr r1, [r1]
-	add r1, #8			//Get mob's initial start position 
-	ldmia r1, {r2, r3}	//Get x(r2) y(r3)
+	add r1, #8				//Get mob's initial start position and type 
+	ldmia r1, {r2, r3, r4}	//Get x(r2) y(r3) type (r4)
 	
-	stmia r0, {r2, r3}	//Store mob's initial position 
+	stmia r0!, {r2, r3}		//Set mob's initial position 
 	
-	//Set Mario's initial position 
-	ldr r0, =mario_data 
-	ldr r1, =0xC9	//decimal 201
-	ldr r2, =0x1F5	//decimal 501
+	//Set delta to 0 
+	mov r1, #0
+	mov r2, #0
+	stmia r0!, {r1, r2}	//Reset delta positions to 0.  r0 now points the address of the picture 
 	
-	//Make Mario appear the the left of the screen again
-	stmia r0, {r1, r2} 
+	cmp r4, #1				//Is it a gumba?
+	ldreq r2, =gumba 		//Set address to picture of gumba 
+	ldrne r2, =turtle_addr	//Else, set address to picture of turtle 
+	str	r2, [r0]
+	
+	
 	
 RB_end:
 	pop {r4, r5, r6, r7, r8, lr}

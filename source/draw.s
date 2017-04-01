@@ -560,29 +560,33 @@ DBG_loop_x:
 	cmp r3, #5
 	beq DBG_qbox_after
 	
-	//11
+	//11: single pipe
 	cmp r3, #11
 	beq DBG_small_pipe
 	
-	//12
+	//12: medium pipe
 	cmp r3, #12
 	beq DBG_medium_pipe
 	
-	//13
+	//13: large pipe
 	cmp r3, #13
 	beq DBG_large_pipe
 	
-	//21
+	//21: single cloud
 	cmp r3, #21
 	beq DBG_cloud_single
 	
-	//22
+	//22: double cloud
 	cmp r3, #22
 	beq DBG_cloud_double
 	
-	//23
+	//23: triple cloud 
 	cmp r3, #23
 	beq DBG_cloud_triple
+	
+	//31: castle
+	cmp r3, #31
+	beq DBG_castle
 	
 	b DBG_loop_x_end
 	
@@ -661,7 +665,13 @@ DBG_cloud_triple:
 	bl drawPicture
 	
 	b DBG_loop_x_end
-
+	
+DBG_castle:
+	ldr r2, =castle_pic
+	bl drawPicture 
+	
+	b DBG_loop_x_end
+	
 DBG_loop_x_end:
 	add r4, #1 
 	
@@ -694,6 +704,7 @@ ModifyLookup:
 	mov r4, #32			
 	mul r5, r2, r4
 	add r5, r1 
+	lsl r5, #2 
 	
 	str r3, [r0, r5]
 	
