@@ -402,13 +402,19 @@ CollisionMarioLeftRight:
 	cmp r4, r0
 	ldrge r0, =background_flag 
 	movge r1, #1 
-	strge r1, [r0]						//Set background flag in memory 
+	strge r1, [r0]						//Set background flag in memory
+	ldrge r0, =background_changed		//Let the renderer know that the background should change
+	movge r1, #0
+	strge r1, [r0] 
 	
 	//Set a flag to move to the previous background 
 	cmp r4, #31
 	ldrle r0, =background_flag 
 	movle r1, #-1 
 	strle r1, [r0]						//Set background flag in memory
+	ldrle r0, =background_changed		//Let the renderer know that the background should change
+	movge r1, #0
+	strle r1, [r0] 
 	
 	//Check if mario hit an impassable object to the left 
 	ldr r0, =mario_data 				//Arg1: address of mario_data

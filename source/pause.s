@@ -165,10 +165,19 @@ drawBackground:
 	*/
 	//bl RenderBackground
 	//Redraw the current background
-	ldr r0, =cur_lookup
+	/*ldr r0, =cur_lookup
+	ldr r0, [r0]
+	
 	ldr r1, =cur_background
+	ldr r1, [r1]
+	
 	ldr r2, =cur_blocks
+	ldr r2, [r2]
 	bl DrawBackground				//in draw.s
+	*/
+	ldr r1, =background_changed
+	mov r0, #0						//0 true, 1 false
+	str r0, [r1]
 	
 	bl renderScoreTitle
 	bl renderCoinsTitle

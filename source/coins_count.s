@@ -63,7 +63,6 @@ renderCoinsCount:
 	ldr r0, =coins_count_changed
 	ldr r1, [r0]
 	//mov r1, #1
-test1:
 	cmp r1, #0					//if coins count hasn't changed
 	beq return					//then return from function
 	

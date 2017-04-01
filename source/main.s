@@ -37,10 +37,28 @@ start_screen:
 	bl menu_select			//user selects either play or exit
 
 play_game:
+	bl RenderBackground
 
-	ldr r0, =bg_lookup_1
-	ldr r1, =background_1 
-	ldr r2, =blocks_1 
+/*	//set the current background to 1
+	ldr r0, =cur_lookup
+	ldr r1, =bg_lookup_1
+	str r1, [r0]
+	
+	ldr r0, =cur_background
+	ldr r1, =background_1
+	str r1, [r0]
+	
+	ldr r0, =blocks_1
+	ldr r1, =cur_blocks
+	str r1, [r0]
+
+	ldr r0, =cur_lookup
+	ldr r0, [r0]
+	ldr r1, =cur_background 
+	ldr r1, [r1]
+	ldr r2, =cur_blocks 
+	ldr r2, [r2]
+	
 	bl DrawBackground 
 	
 	//copy dynamic frame into the current background 
@@ -49,7 +67,7 @@ play_game:
 	ldr r2, =background_1 
 	ldr r3, =dyn_background
 	bl ReplaceBlockBG
-	
+	*/
 color:
 //CHECK COLOR DEBUG
 	//ldr 	r4, =sample
@@ -61,9 +79,9 @@ color:
 
 //CHECK COLOR DEBUG_END 
 	
-	bl renderScoreTitle
-	bl renderCoinsTitle
-	bl renderLivesTitle
+	//bl renderScoreTitle
+	//bl renderCoinsTitle
+	//bl renderLivesTitle
 	
 game_loop:
 	bl update
