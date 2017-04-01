@@ -66,7 +66,7 @@ renderLives:
 	ldr r1, [r5, #4]		//y pos
 	ldr r2, =bg_colour
 	ldrh r2, [r2]			//colour
-	ldr r3, =190			//width
+	ldr r3, =38				//width
 	ldr r4, =25				//height
 	bl drawRectangle
 	

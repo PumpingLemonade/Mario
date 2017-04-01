@@ -39,6 +39,32 @@ GameWinScreen:
 	ldr r1, =346
 	ldr r2, =game_win_pic
 	bl drawPicture
+	
+	//Show the hud titles
+	bl renderScoreTitle
+	bl renderCoinsTitle
+	bl renderLivesTitle
+	
+	//redraw the score too
+	ldr r0, =score_changed			//changed score changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//redraw the coins too
+	ldr r0, =coins_count_changed			//changed coins count changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//redraw the lives too
+	ldr r0, =lives_changed			//changed lives changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//The following functions only draw if score has changed
+	bl renderScore
+	bl renderCoinsCount
+	bl renderLives
+	
 	b wait_button_press
 	
 //wait until a single button is pressed
