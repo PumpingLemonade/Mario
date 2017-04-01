@@ -1,4 +1,4 @@
-.global GameOverScreen
+.global CheckGameOver
 
 //No need to return from here because one this
 //is reached it should automatically bring player
@@ -23,4 +23,14 @@ wait_button_press:
 	
 	b start_screen		//go back to beginning of the at the game menu
 	
+//check if mario's lives are 0. If so then game over	
+CheckGameOver:
+	push {lr}
+		
+	ldr r0, =lives
+	ldr r0, [r0]
+	cmp r0, #0
+	pople {lr}			//remove lr from stack because we won't be returning
+	ble GameOverScreen	
 	
+	pop {pc}
