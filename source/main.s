@@ -103,6 +103,13 @@ update:
 	bl MarioUpdate
 	bl MonsterUpdate
 	
+	//check if mario's lives are 0. If so then game over
+	ldr r0, =lives
+	ldr r0, [r0]
+	cmp r0, #0
+	pople {lr}			//remove lr from stack
+	ble GameOverScreen
+	
 	/*ldr r0, =spawn_value_pack
 	ldr r0, [r0]
 	cmp r0, #0

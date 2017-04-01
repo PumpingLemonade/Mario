@@ -908,6 +908,7 @@ CollisionMarioDead:
 	ldr r0, =mario_data					//Get address of mario_data 
 	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
 
+	bl decrementLives					//decrease mario's life by 1
 	pop {r4, r5, r6, r7, lr}
 	bx lr 
 	
