@@ -312,6 +312,12 @@ CollisionMarioBottom:
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
 	
+	//Check if mario fell into a pit 
+	ldr r0, =0x2FE						//Decimal 766 - lowest point in the screen
+	cmp r5, r0							//Has Mario fallen into a pit?
+	blge CollisionMarioDead				//Mario has died 
+	bge CMB_end 
+	
 	//MONSTER 
 	ldr r0, =mario_data					//Arg1: address of mario data 
 	mov r1, #2							//Arg2: check bottom
@@ -403,12 +409,14 @@ CollisionMarioLeftRight:
 	ldrge r0, =background_flag 
 	movge r1, #1 
 	strge r1, [r0]						//Set background flag in memory 
+	bge CMLR_dif_screen					//Set Mario's initial position on the new screen
 	
 	//Set a flag to move to the previous background 
 	cmp r4, #31
 	ldrle r0, =background_flag 
 	movle r1, #-1 
 	strle r1, [r0]						//Set background flag in memory
+	ble CMLR_dif_screen					//Set Mario's initial position on the new screen
 	
 	//Check if mario hit an impassable object to the left 
 	ldr r0, =mario_data 				//Arg1: address of mario_data
@@ -431,14 +439,15 @@ CollisionMarioLeftRight:
 	mov r1, #3							//Arg2: check right
 	bl isMonsterHit						//Has mario hit a monster?
 	cmp r0, #1							
-	beq CMLR_mario_dead					//Branch CMB_monster
+	bleq CollisionMarioDead				//Set Mario's position to his respawn position and remove a life 
+	beq CMLR_end
 	
 	//Check if mario hit a monster 
 	ldr r0, =mario_data					//Arg1: address of mario data 
 	mov r1, #4							//Arg2: check left 
 	bl isMonsterHit						//Has mario hit a monster?
 	cmp r0, #1							
-	beq CMLR_mario_dead					//Branch CMB_monster
+	bleq CollisionMarioDead				//Branch CMB_monster
 	
 	//If we are at the end of the screen, move to the next screen 
 	
@@ -455,16 +464,23 @@ CMLR_impassable:
 	
 	b CMLR_end
 
-CMLR_mario_dead:
-	sub r4, r6
-	sub r5, r7
-	rsb r6, r4, #100
-	rsb r7, r5,	#500
-	mov r4, #100						//Set mario's original position
-	mov r5,	#500						//Set mario's original position 
-
-	ldr r0, =mario_data					//Get address of mario_data 
-	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
+CMLR_dif_screen:
+	//Did mario move to the previous screen or the next screen
+	cmp r4, #0
+	ldr r0, =mario_data 
+	
+	//If Mario moved to the next screen, set him at the start of the next screen 
+	ldrgt r1, =0xC9	//decimal 201
+	ldrgt r2, =0x1F5	//decimal 501
+	
+	//If Mario moved to the last screen, set him at the end of that screen
+	ldrlt r1, =0x3D5	//decimal 981
+	ldrlt r2, =0x1F5	//decmial 501 
+	
+	//Make Mario appear the the left of the screen again
+	stmia r0, {r1, r2} 
+	
+	b CMLR_end
 
 CMLR_end:
 	pop {r4, r5, r6, r7, lr}
@@ -563,7 +579,7 @@ CB_qbox:
 	lsr r1,	box_x_pos, #5			//Arg2: x position
 	lsr r2,	box_y_pos, #5			//Arg3: y position
 	mov r3, #5
-	//bl ModifyLookup
+	bl ModifyLookup
 	
 	mov r0, box_x_pos				//Arg1: x position
 	mov r1, box_y_pos				//Arg2: y position
@@ -597,7 +613,7 @@ CB_wbox:
 	lsr r1,	box_x_pos, #5			//Arg2: x position
 	lsr r2,	box_y_pos, #5			//Arg3: y position
 	mov r3, #0						//Arg4: sky box 
-	//bl ModifyLookup
+	bl ModifyLookup
 	
 	ldr r0, =mario_data					//Get address of mario_data
 	ldmia r0, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
@@ -687,13 +703,43 @@ isMonsterHit:
 	mov r5, #0							//Set default return value to false
 	mov r6, r1							//Save direction in a safe place 
 
-	//Gumba color 
+	//Check if a gumba has been hit 
 	mov r0, r4							//Arg1: address of mario_data
 	mov r1, r6							//Arg2: Check the specified direction 
 	ldr r2, =gumba_color 			
 	ldr r2, [r2]						//Arg3: Check gumba color
 	bl CollisionColorCheck
-
+	cmp r0, #1							//If collided, skip other checks 
+	beq iMH_end
+	
+	//Check if turtle has been hit (white)
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction
+	ldr r2, =turtle_color_w 			
+	ldr r2, [r2] 						//Arg3: White turtle color 
+	bl CollisionColorCheck  
+	cmp r0, #1
+	beq iMH_end							//If collided, skip other checks 
+	
+	//Check if turtle has been hit (orange)
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction
+	ldr r2, =turtle_color_o 			
+	ldr r2, [r2] 						//Arg3: Orange turtle color 
+	bl CollisionColorCheck  
+	cmp r0, #1
+	beq iMH_end							//If collided, skip other checks 
+	
+	//Check if turtle has been hit (green)
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction
+	ldr r2, =turtle_color_g 			
+	ldr r2, [r2] 						//Arg3: Green turtle color 
+	bl CollisionColorCheck  
+	cmp r0, #1
+	beq iMH_end							//If collided, skip other checks 
+	
+iMH_end:
 	pop {r4, r5, r6, lr}
 	bx lr 
 
@@ -725,6 +771,12 @@ CollisionMonsterBottom:
 	mov r8, r0							//Save data pointer in safe place 
 	
 	ldmia r8, {r4, r5, r6, r7}			//Load mario x (r4), y (r5), delta x (r6), delta y (r7)
+	
+	//Check if fell into a pit 
+	ldr r0, =0x2FE						//Decimal 766 - lowest point in the screen
+	cmp r5, r0							//Has monster fallen into pit?
+	blge killCurMonster					//Kill monster 
+	bge CMOB_end 
 	
 	//FLOOR
 	mov r0, r8 							//Arg1: data_pointer
@@ -782,6 +834,15 @@ CollisionMonsterLeftRight:
 	cmp r0, #1							//Has monster hit something to the right?? 
 	beq CMoLR_impassable	 			//Branch to CMoLR_impassable	
 	
+	//Check bounds left 
+	cmp r4, #32							//Check if monster hit the left edge of the screen
+	blt CMoLR_impassable 				//Bounce back 
+	
+	//Check bounds right 
+	ldr r0, =0x3FF						//Check if monster hit the right edge of the screen (Decimal 1023) 
+	cmp r5, r0 							//bgt CMoLR_impassable 
+	bgt CMoLR_impassable 
+	
 	b CMoLR_end							//Branch to end of the function
 	
 CMoLR_impassable:
@@ -810,4 +871,29 @@ CMoLR_end:
 	pop {r4, r5, r6, r7, r8, lr}
 	bx lr 
 
+
+//==================================================
+//void CollisionMarioDead()
+//Removes a life from Mario and sets his new spawn location
+//Returns: void 
+//==================================================
+CollisionMarioDead:
+
+	push {r4, r5, r6, r7, lr}
+	
+	ldr r0, =mario_data
+	ldmia r0, {r4, r5, r6, r7}
+
+	sub r4, r6							//Reverse x position changes made by update 
+	sub r5, r7							//Reverse y position changes made by update 
+	rsb r6, r4, #100					//Calculate delta between current x position and x position where mario will respawn
+	rsb r7, r5,	#500					//Calculate delta between current y position and y position where mario will respawn
+	mov r4, #100						//Set mario's original position
+	mov r5,	#500						//Set mario's original position 
+
+	ldr r0, =mario_data					//Get address of mario_data 
+	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
+
+	pop {r4, r5, r6, r7, lr}
+	bx lr 
 	
