@@ -24,7 +24,7 @@ main:
 	
 	//bl 		EnableC1IRQ
 	
-	
+	bl		restart_dup_pic
 	bl 		clearScreen
 
 start_screen:
