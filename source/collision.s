@@ -451,9 +451,10 @@ CollisionMarioLeftRight:
 	mov r1, #3							//Arg2: check right
 	bl isMonsterHit						//Has mario hit a monster?
 	cmp r0, #1							
+	
 	bleq CollisionMarioDead				//Set Mario's position to his respawn position and remove a life 
 	beq CMLR_end
-	
+
 	//Check if mario hit a monster 
 	ldr r0, =mario_data					//Arg1: address of mario data 
 	mov r1, #4							//Arg2: check left 
@@ -914,4 +915,39 @@ CollisionMarioDead:
 
 	pop {r4, r5, r6, r7, lr}
 	bx lr 
+	
+	
+/**
+	
+	//Check if mario hit an impassable object to the right
+	ldr r0, =mario_data 				//Arg1: address of mario_data
+	mov r1, #3							//Arg2: Check the left
+	bl isCollisionImpassable			//Call isCollisionImpassable
+	
+	cmp r0, #1							//Has mario hit the floor? 
+	beq CMLR_impassable	 				//Branch to CMLR_impassable	
+	
+	//Check if mario hit a monster 
+	ldr r0, =mario_data					//Arg1: address of mario data 
+	mov r1, #3							//Arg2: check right
+	bl isMonsterHit						//Has mario hit a monster?
+	cmp r0, #1							
+	bne CMLR_continue 
+	
+	ldr r0, =jump_flag					//Load address of jump_flag
+	ldr r0, [r0]
+	cmp r0, #0
+	beq CMLR_continue
+	
+	ldr r0, =is_floor					//Set the floor flag 
+	ldr r0, [r0]
+	cmp r0, #0
+	beq CMLR_continue
+	
+	
+	bleq CollisionMarioDead				//Set Mario's position to his respawn position and remove a life 
+	
+	beq CMLR_end
+CMLR_continue:
+*/
 	
