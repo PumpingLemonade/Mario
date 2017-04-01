@@ -60,15 +60,24 @@ exit_pause_menu:
 	
 	
 draw_pause_menu:
-	push {lr}
+	push {r4, lr}
 	
 	// draw pause menu in middle of screen
 	ldr r0, =311		//x location
 	ldr r1, =183		//y location
-	ldr r2, =pause_menu_pic	//data structure for menu pic
+	ldr r2, =bg_color	//first draw the rectangle with no text
+	ldrh r2, [r2]
+	ldr r3, =400		//width
+	ldr r4, =400		//heght
+	bl drawRectangle
+	
+	//now draw the text
+	ldr r0, =421
+	ldr r1, =236
+	ldr r2, =pause_menu_pic
 	bl drawPicture
 	
-	pop {pc}
+	pop {r4, pc}
 	
 //==================
 //Paramters:

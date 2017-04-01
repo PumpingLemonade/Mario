@@ -24,13 +24,13 @@ main:
 	
 	//bl 		EnableC1IRQ
 	
-	bl		restart_dup_pic
-	bl 		clearScreen
+	bl		restart_dup_pic	
 
 start_screen:
+	bl 		clearScreen
 
-	mov r0, #0				// x location to draw start screen
-	mov r1, #0				//y locatation to draw start screen
+	ldr r0, =210			// x location to draw start screen
+	mov r1, #36				//y locatation to draw start screen
 	ldr r2, =main_menu_pic
 	bl drawPicture
 	
@@ -102,6 +102,12 @@ update:
 	bl CoinUpdate
 	bl MarioUpdate
 	bl MonsterUpdate
+	
+	bl CheckGameOver	//check if mario lost all his lives
+	bl CheckGameWin		//check if mario made it to the end
+	
+	//Check if mario is on the last screen and if his x
+	//is greater than the flag pole
 	
 	/*ldr r0, =spawn_value_pack
 	ldr r0, [r0]

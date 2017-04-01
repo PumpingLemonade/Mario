@@ -66,7 +66,7 @@ renderLives:
 	ldr r1, [r5, #4]		//y pos
 	ldr r2, =bg_colour
 	ldrh r2, [r2]			//colour
-	ldr r3, =190			//width
+	ldr r3, =38				//width
 	ldr r4, =25				//height
 	bl drawRectangle
 	
@@ -75,6 +75,7 @@ renderLives:
 	mov r6, #0				//will mod by 10 6 times to get 6 digits
 	ldr r5, =lives
 	ldr r5, [r5]
+
 mod10:
 	cmp r6, #2
 	bhs print_lives				//print if signed less than or equal
