@@ -590,6 +590,26 @@ DBG_loop_x:
 	cmp r3, #31
 	beq DBG_castle
 	
+	//41: bush single
+	cmp r3, #41
+	beq DBG_bush_single
+	
+	//42: bush double 
+	cmp r3, #42
+	beq DBG_bush_double
+	
+	//43: bush triple
+	cmp r3, #43
+	beq DBG_bush_triple
+	
+	//51: mountain_small
+	cmp r3, #51
+	beq DBG_mountain_small
+	
+	//52: mountain_big 
+	cmp r3, #52
+	beq DBG_mountain_big
+	
 	b DBG_loop_x_end
 	
 DBG_sky:
@@ -606,8 +626,7 @@ DBG_ground:
 	
 	b DBG_loop_x_end
 	
-DBG_qbox:
-
+DBG_qbox:	
 	ldr r2, =qbox_pic	//Arg4: pointer to picture to draw 
 	bl drawPicture
 	
@@ -674,6 +693,36 @@ DBG_castle:
 	
 	b DBG_loop_x_end
 	
+DBG_bush_single:
+	ldr r2, =bush_single_pic
+	bl drawPicture 
+	
+	b DBG_loop_x_end
+	
+DBG_bush_double:
+	ldr r2, =bush_double_pic
+	bl drawPicture 
+	
+	b DBG_loop_x_end
+
+DBG_bush_triple:
+	ldr r2, =bush_triple_pic
+	bl drawPicture 
+	
+	b DBG_loop_x_end
+	
+DBG_mountain_small:
+	ldr r2, =mountain_small_pic
+	bl drawPicture 
+	
+	b DBG_loop_x_end
+	
+DBG_mountain_big:
+	ldr r2, =mountain_big_pic
+	bl drawPicture
+	
+	b DBG_loop_x_end
+
 DBG_loop_x_end:
 	add r4, #1 
 	

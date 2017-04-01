@@ -229,9 +229,12 @@ CCC_top_bottom:
 	x_pos_end		.req r10 	
 	sub x_pos_end, x_pos, width  		//Last x position to check 
 	
-	cmp r1, #1							//Is it the top?
-	addeq x_pos_end, #1					//Do not check bottom left corner 
-	subeq x_pos, #1						//Do not check bottom right corner 
+	//Is it the top?
+	//addeq x_pos_end, #1				//Do not check bottom left corner 
+	//subeq x_pos, #1					//Do not check bottom right corner 
+	cmp r1, #2								//Is it the bottom?
+	addeq x_pos_end, #2					//Do not check bottom left corner 
+	subeq x_pos, #2						//Do not check bottom right corner 
 	
 	b CCC_top_bottom_loop_test			//Branch to CCC_top_loop_test
 	
@@ -341,7 +344,6 @@ CollisionMarioBottom:
 	b CMB_end						
 	
 CMB_floor: 
-
 	//Reverse the change made by the update function in the y direction 
 	sub r5, r7							//Mario y = mario y - delta y
 	mov r7, #0							//Clear delta_y
@@ -907,6 +909,8 @@ CollisionMarioDead:
 
 	ldr r0, =mario_data					//Get address of mario_data 
 	stmia r0, {r4,r5,r6,r7}				//Update mario x,y,delta x,delta y in memory
+	
+	bl decrementLives					//Decrement number of lives 
 
 	pop {r4, r5, r6, r7, lr}
 	bx lr 

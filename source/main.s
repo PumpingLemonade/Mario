@@ -70,10 +70,10 @@ play_game:
 	*/
 color:
 //CHECK COLOR DEBUG
-//	ldr 	r4, =sample
-//	ldrh 	r5, [r4], #2 
-//	ldrh 	r6, [r4], #2 
-//	ldrh 	r7, [r4], #2 
+	ldr 	r4, =sample
+	ldrh 	r5, [r4], #2 
+	ldrh 	r6, [r4], #2 
+	ldrh 	r7, [r4], #2 
 //	ldrh 	r8, [r4], #2 
 //	ldrh 	r9, [r4]
 
