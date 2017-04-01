@@ -55,13 +55,21 @@ RC_end:
 RenderBackground:
 	push {r4, r5, r6, r7, r8, lr}
 	
+	ldr r0, =background_changed
+	ldr r1, [r0]
+	cmp r1, #1			//If not changed
+	beq RB_end			//then return
+	
+	mov r1, #1			//Otherwise store that it has changed
+	str r1, [r0]
+	
 	//Get the background flag 
 	ldr r0, =background_flag 
 	ldr r4, [r0]
 	
 	//Check if the background flag has been set 
-	cmp r4, #0
-	beq RB_end 	//If not set, then branch to end 
+	//cmp r4, #0
+	//beq RB_end 	//If not set, then branch to end 
 	
 	//Clear the background flag 
 	mov r1, #0
@@ -120,6 +128,26 @@ RenderBackground:
 	ldr r2, [r2]
 	
 	bl DrawBackground 
+	
+	//draw the hud elements on the new background
+	bl renderScoreTitle
+	bl renderCoinsTitle
+	bl renderLivesTitle
+	
+	//redraw the score too
+	ldr r0, =score_changed			//changed score changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//redraw the coins too
+	ldr r0, =coins_count_changed			//changed coins count changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//redraw the lives too
+	ldr r0, =lives_changed			//changed lives changed to true
+	mov r1, #1
+	str r1, [r0]
 	
 	//copy dynamic frame into the current background 
 	mov r0, #0

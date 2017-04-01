@@ -1,5 +1,6 @@
 .global pause_menu
 
+.section .text
 pause_menu:
 	push {r5, r8, lr}
 	PREV_BUTTONS .req r8
@@ -49,6 +50,7 @@ check_exit:
 	cmp r5, #2				//if current selection is exit
 	bne menu_select_loop	//branch if not exit
 	bl restart_game			//else restart the game
+	pop {r5, r8, lr}		//remove pushed contents from stack
 	b start_screen			//then go to start screen
 	
 	
@@ -155,20 +157,55 @@ cover_selector:
 //==========================================
 drawBackground:
 	push {lr}
-	mov r0, #0						//x pos
+/*	mov r0, #0						//x pos
 	mov r1, #0						//y pos
-	ldr r2, =background_1			//data structure for background
+	ldr r2, =cur_background			//data structure for background
+	ldr r2, [r2]					//r2 point to structure for current bg
 	bl drawPicture
+	*/
+	//bl RenderBackground
+	//Redraw the current background
+	/*ldr r0, =cur_lookup
+	ldr r0, [r0]
+	
+	ldr r1, =cur_background
+	ldr r1, [r1]
+	
+	ldr r2, =cur_blocks
+	ldr r2, [r2]
+	bl DrawBackground				//in draw.s
+	*/
+	ldr r1, =background_changed
+	mov r0, #0						//0 true, 1 false
+	str r0, [r1]
+	
+	bl renderScoreTitle
+	bl renderCoinsTitle
+	bl renderLivesTitle
 	
 	//redraw the score too
 	ldr r0, =score_changed			//changed score changed to true
 	mov r1, #1
 	str r1, [r0]
+	
+	//redraw the coins too
+	ldr r0, =coins_count_changed			//changed coins count changed to true
+	mov r1, #1
+	str r1, [r0]
+	
+	//redraw the lives too
+	ldr r0, =lives_changed			//changed lives changed to true
+	mov r1, #1
+	str r1, [r0]
+	
 	pop {pc}
 	
 .section .data
+bg_color:		.ascii "\4\323"
+.align 4
+
 resume_option:	.int 385, 268			//x and y of where to draw menu selector
 restart_option:	.int 385, 373
 exit_option:	.int 385, 485
-bg_color:		.ascii "\4\323"
+
 	

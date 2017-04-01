@@ -9,14 +9,21 @@ _start:
 
 
 main:
-    mov     sp, #0x8000
-	
+/*
+	mov r0, #0xD2		//1101 0010b - IRQ mode
+	msr cpsr_c, r0		//set to irq so that it's lr is always used
+	*/
+
+   // bl 		InstallIntTable
+    
+    mov sp, #0x8000
 	bl		EnableJTAG
 
 	bl		InitFrameBuffer
 	bl		InitGPIOSNES
 	
-	mov 	r10, #0
+	//bl 		EnableC1IRQ
+	
 	
 	bl 		clearScreen
 
@@ -30,10 +37,28 @@ start_screen:
 	bl menu_select			//user selects either play or exit
 
 play_game:
+	bl RenderBackground
 
-	ldr r0, =bg_lookup_1
-	ldr r1, =background_1 
-	ldr r2, =blocks_1 
+/*	//set the current background to 1
+	ldr r0, =cur_lookup
+	ldr r1, =bg_lookup_1
+	str r1, [r0]
+	
+	ldr r0, =cur_background
+	ldr r1, =background_1
+	str r1, [r0]
+	
+	ldr r0, =blocks_1
+	ldr r1, =cur_blocks
+	str r1, [r0]
+
+	ldr r0, =cur_lookup
+	ldr r0, [r0]
+	ldr r1, =cur_background 
+	ldr r1, [r1]
+	ldr r2, =cur_blocks 
+	ldr r2, [r2]
+	
 	bl DrawBackground 
 	
 	//copy dynamic frame into the current background 
@@ -42,7 +67,7 @@ play_game:
 	ldr r2, =background_1 
 	ldr r3, =dyn_background
 	bl ReplaceBlockBG
-	
+	*/
 color:
 //CHECK COLOR DEBUG
 //	ldr 	r4, =sample
@@ -53,6 +78,10 @@ color:
 //	ldrh 	r9, [r4]
 
 //CHECK COLOR DEBUG_END 
+	
+	//bl renderScoreTitle
+	//bl renderCoinsTitle
+	//bl renderLivesTitle
 	
 game_loop:
 	bl update
@@ -74,6 +103,11 @@ update:
 	bl MarioUpdate
 	bl MonsterUpdate
 	
+	/*ldr r0, =spawn_value_pack
+	ldr r0, [r0]
+	cmp r0, #0
+	bleq setValuePackPos
+	*/
 update_end:
 	pop {lr}
 	bx lr 
@@ -91,9 +125,9 @@ collision:
 
 render: 
 	push {lr}
-	
+
 	bl RenderBackground 
-	
+
 	ldr r0, =mario_data 
 	bl moveThing 
 
@@ -103,9 +137,13 @@ render:
 	bl RenderCoin					//Render the coin if necessary 
 
 	bl renderScore
-	
+	bl renderCoinsCount
+	bl renderLives
+	//bl renderValuePack				//only renders once in the time interval
+		
 	pop {lr}
 	bx lr 
+
 
 
 
