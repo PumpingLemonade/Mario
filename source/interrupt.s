@@ -2,18 +2,6 @@
 .global EnableC1IRQ
 
 InstallIntTable:
-	
-	ldr r0, =IntTable	//where to read vector table from
-	mov r1, #0x0000		//where to write vector table
-	
-	//first 8 words
-	ldmia r0!, {r2-r9}
-	stmia r1!, {r2-r9}
-	
-	//seconds 8 words
-	ldmia r0!, {r2-r9}
-	stmia r1!, {r2-r9}
-	
 	//switch to IRQ mode and set stack pointer
 	//do this mode second so that we always end of in 
 	//irq mode. For some reason it works all the time
@@ -27,9 +15,17 @@ InstallIntTable:
 	msr cpsr_c, r0
 	ldr sp, =0x8000000
 	
+	ldr r0, =IntTable	//where to read vector table from
+	mov r1, #0x0000		//where to write vector table
 	
+	//first 8 words
+	ldmia r0!, {r2-r9}
+	stmia r1!, {r2-r9}
 	
-	
+	//seconds 8 words
+	ldmia r0!, {r2-r9}
+	stmia r1!, {r2-r9}
+		
 	bx lr		//return
 	
 EnableC1IRQ:
@@ -61,6 +57,7 @@ EnableC1IRQ:
 	
 	bx lr
 	
+			
 haltLoop$:
 	b haltLoop$
 	
