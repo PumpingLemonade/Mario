@@ -35,7 +35,7 @@ EnableC1IRQ:
 	
 	//Make r1 = current time + delay
 	mov r2, #1
-	lsl r2, #21				//approx 2 000 000 micro sec = 2 sec
+	lsl r2, #24				//approx 2 000 000 micro sec = 2 sec
 	add r1, r2
 	
 	ldr r0, =0x3F003010		//register for C1
