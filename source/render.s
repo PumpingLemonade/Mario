@@ -149,6 +149,9 @@ RenderBackground:
 	mov r1, #1
 	str r1, [r0]
 	
+	bl ValuePackOffScreen				//let the value pack know that it is off screen
+									//so another one can be drawn
+	
 	//copy dynamic frame into the current background 
 	mov r0, #0
 	mov r1, #0

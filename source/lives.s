@@ -1,4 +1,5 @@
 .global decrementLives
+.global incrementLives
 .global renderLives
 .global renderLivesTitle
 .global lives
@@ -16,6 +17,25 @@ decrementLives:
 	ldr r1, =lives
 	ldr r2, [r1]
 	sub r2, #1
+	str	r2, [r1]
+	
+	//change lives_changed to true
+	ldr r1, =lives_changed
+	mov r2, #1					//1 is true, the lives changed
+	str r2, [r1]
+	
+	pop {pc}
+
+//==================================
+//Increment Lives by 1
+//==================================
+incrementLives:
+	push {lr}
+
+	//update the lives
+	ldr r1, =lives
+	ldr r2, [r1]
+	add r2, #1
 	str	r2, [r1]
 	
 	//change lives_changed to true

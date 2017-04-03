@@ -707,7 +707,7 @@ iCC_end:
 	
 //==============================================================
 //boolean isMonsterHit(int spirte, int direction)
-//Checks if sprite has hit the monster from specified direction 
+//Checks if sprite has hit the monster from specified direction.  Also checks if the star has been hit (in this case, return false)
 //r0: pointer to sprite_data 
 //r1: direction to check 1:top, 2:bottom, 3:right, 4: left 
 //Returns: true if the sprite hit a monster, false otherwise 
@@ -720,6 +720,16 @@ isMonsterHit:
 	mov r5, #0							//Set default return value to false
 	mov r6, r1							//Save direction in a safe place 
 
+	//Check if the star has been hit 
+	mov r0, r4 							//Arg1: address of mario_data 
+	mov r1, r6							//Arg2: specified direction
+	ldr r2, =star_color 				
+	ldrh r2, [r2]						//Arg3: star color 
+	bl CollisionColorCheck
+	cmp r0, #1							//Has star been hit? 
+	bleq CollisionStar					//Star has been hit 
+	mov r0, #0 							//Clear return value 
+	
 	//Check if a gumba has been hit 
 	mov r0, r4							//Arg1: address of mario_data
 	mov r1, r6							//Arg2: Check the specified direction 
@@ -915,7 +925,39 @@ CollisionMarioDead:
 
 	pop {r4, r5, r6, r7, lr}
 	bx lr 
+
+//==================================================
+//void CollisionStar()
+//Handle a star collision by erasing the star and implementing the value pack 
+//Returns: void 
+//==================================================
+CollisionStar: 
+
+	push {r4, lr}
 	
+	//Get coordinates of the star 
+	ldr r0, =value_pack_pos			
+	ldmia r0, {r1, r2} 					//r1(x) r2(y)
+	
+	//Get dimensions of the star 
+	ldr r0, =star_pic						
+	ldmib r0, {r3, r4} 					//r3(width), r4(height)
+	
+	//Redraw_Background_X(x_start, x_end, y_start, y_end)
+	mov r0, r1							//Arg1: x_start
+	add r1, r3 							//Arg2: x_end 
+	
+	//mov r2, r2 						//Arg3: y_start 
+	add r3, r2							//Arg3: y_end 
+	
+	bl Redraw_Background_X				//Redraw background at star's location 
+	
+	//*******STAR FUNCTION GOES HERE***************//
+	bl ValuePackOffScreen					//Now another star can be drawn
+	bl incrementLives						//the value pack gives you another life
+										
+	pop {r4, lr}
+	bx lr 
 	
 /**
 	
@@ -950,4 +992,6 @@ CollisionMarioDead:
 	beq CMLR_end
 CMLR_continue:
 */
+
+
 	

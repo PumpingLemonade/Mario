@@ -78,6 +78,8 @@ restart_game:
 	mov r0, #0					//0 true, 1 false
 	str r0, [r1]
 	
+	bl ValuePackOffScreen		//another value pack can be drawn
+	
 	bl restart_restore_pic
 	
 	pop {r4-r7, pc}
@@ -101,7 +103,7 @@ rdp_loop:
 	str r3, [r2], #4 
 	cmp r0, r1 				//Have we reached pic_dup_end? 
 	ble rdp_loop			//If not, duplicate the next value 
-	
+test2:	
 	pop {lr}
 	bx lr 
 	
