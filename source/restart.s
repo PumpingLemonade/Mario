@@ -9,13 +9,13 @@
 //values
 //==========================================
 restart_game:
-	push {r4-r7, lr}
+	push {lr}
 	
 	bl ValuePackOffScreen		//another value pack can be drawn
 	
 	bl restart_restore_pic
 	
-	pop {r4-r7, pc}
+	pop {pc}
 
 //=========================================
 //restart_dup_pic

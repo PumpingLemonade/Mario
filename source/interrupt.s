@@ -1,6 +1,10 @@
 .global InstallIntTable
 .global EnableC1IRQ
+.global DisableC1IRQ
 
+//================================================
+//Install Interrupt Vector Table
+//================================================
 InstallIntTable:
 	//switch to IRQ mode and set stack pointer
 	//do this mode second so that we always end of in 
@@ -27,7 +31,10 @@ InstallIntTable:
 	stmia r1!, {r2-r9}
 		
 	bx lr		//return
-	
+
+//================================================
+//Enable Counter 1 interrupt requests 
+//================================================
 EnableC1IRQ:
 	//update time in c1 to 2 seconds timer
 	ldr r0, =0x3F003004		//Register for CLO
@@ -56,8 +63,18 @@ EnableC1IRQ:
 	msr cpsr_c, r0		//move from register to status
 	
 	bx lr
+
+//================================================
+//Distable Counter 1 interrupt requests 
+//================================================
+DisableC1IRQ: 
+	//Enable IRQ line 1 for C1
+	ldr r0, =0x3F00B210
+	mov r1, #0				//1010b, only enabling C1 and C3
+	str r1, [r0]
 	
-			
+	bx lr 
+	
 haltLoop$:
 	b haltLoop$
 	
