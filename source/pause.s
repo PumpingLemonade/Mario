@@ -44,6 +44,7 @@ check_restart:
 	bne check_exit			//if not then skip
 	bl restart_game			//else restart game in restart.s
 	bl drawBackground
+	bl updateTimer
 	b exit_pause_menu		//return to game with reset values
 	
 check_exit:
@@ -51,6 +52,7 @@ check_exit:
 	bne menu_select_loop	//branch if not exit
 	bl restart_game			//else restart the game
 	pop {r5, r8, lr}		//remove pushed contents from stack
+	bl updateTimer
 	b start_screen			//then go to start screen
 	
 	

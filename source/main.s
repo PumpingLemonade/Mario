@@ -38,50 +38,6 @@ start_screen:
 play_game:
 	bl RenderBackground
 
-/*	//set the current background to 1
-	ldr r0, =cur_lookup
-	ldr r1, =bg_lookup_1
-	str r1, [r0]
-	
-	ldr r0, =cur_background
-	ldr r1, =background_1
-	str r1, [r0]
-	
-	ldr r0, =blocks_1
-	ldr r1, =cur_blocks
-	str r1, [r0]
-
-	ldr r0, =cur_lookup
-	ldr r0, [r0]
-	ldr r1, =cur_background 
-	ldr r1, [r1]
-	ldr r2, =cur_blocks 
-	ldr r2, [r2]
-	
-	bl DrawBackground 
-	
-	//copy dynamic frame into the current background 
-	mov r0, #0
-	mov r1, #0
-	ldr r2, =background_1 
-	ldr r3, =dyn_background
-	bl ReplaceBlockBG
-	*/
-color:
-//CHECK COLOR DEBUG
-	ldr 	r4, =sample
-	ldrh 	r5, [r4], #2 
-	ldrh 	r6, [r4], #2 
-	ldrh 	r7, [r4], #2 
-//	ldrh 	r8, [r4], #2 
-//	ldrh 	r9, [r4]
-
-//CHECK COLOR DEBUG_END 
-	
-	//bl renderScoreTitle
-	//bl renderCoinsTitle
-	//bl renderLivesTitle
-	
 game_loop:
 	bl update
 	bl collision

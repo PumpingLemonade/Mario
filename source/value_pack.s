@@ -4,6 +4,7 @@
 .global setValuePackPos
 .global ValuePackOffScreen
 .global value_pack_pos
+.global updateTimer
 
 irqISR:
 	push {r0-r12, lr}

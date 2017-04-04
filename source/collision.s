@@ -478,25 +478,37 @@ CMLR_impassable:
 	b CMLR_end
 
 CMLR_dif_screen:
+
 	//Did mario move to the previous screen or the next screen
 	cmp r2, #0
 	ldr r0, =mario_data 
+	blt CMLR_previous_screen
 	
+CMLR_next_screen:
 	//If Mario moved to the next screen, set him at the start of the next screen 
-	ldrgt r1, =0x21		//decimal 33
-	ldrgt r2, =0x29F	//decimal 671
+	ldr r1, =0x22		//decimal 34
+	ldr r2, =0x29E		//decimal 670
+	
+	b	CMLR_screen_position_set
+
+CMLR_previous_screen:
+
+	//If we are on the first screen, we should not be able to move backwards 
+	ldr r3, =cur_background_idx 	
+	ldr r3, [r3] 
+	cmp r3, #1 
+	beq CMLR_impassable 
 	
 	//If Mario moved to the last screen, set him at the end of that screen
-	ldrlt r1, =0x3F3	//decimal 1011
-	ldrlt r2, =0x29F	//decmial 671 
+	ldr r1, =0x3F4		//decimal 1012
+	ldr r2, =0x29E		//decmial 670 
 	
-	//Make Mario appear the the left of the screen again
+CMLR_screen_position_set:
+	//Set Mario's new coordinates for the upcoming screen 
 	stmia r0, {r1, r2} 
 	
 	//End Mario's jump if he is jumping 
 	bl endJump
-	
-	b CMLR_end
 
 CMLR_end:
 	pop {r4, r5, r6, r7, lr}
@@ -719,7 +731,11 @@ isMonsterHit:
 	mov r4, r0							//Save pointer to sprite data in safe place 
 	mov r5, #0							//Set default return value to false
 	mov r6, r1							//Save direction in a safe place 
+	
+	cmp r6, #2 							//Checking the bottom should only look for hit colors 
+	beq iMH_bottom	
 
+iMH_left_right:
 	//Check if the star has been hit 
 	mov r0, r4 							//Arg1: address of mario_data 
 	mov r1, r6							//Arg2: specified direction
@@ -730,7 +746,7 @@ isMonsterHit:
 	bleq CollisionStar					//Star has been hit 
 	mov r0, #0 							//Clear return value 
 	
-	//Check if a gumba has been hit 
+	//Check if a gumba has been hit from side 
 	mov r0, r4							//Arg1: address of mario_data
 	mov r1, r6							//Arg2: Check the specified direction 
 	ldr r2, =gumba_color 			
@@ -739,16 +755,7 @@ isMonsterHit:
 	cmp r0, #1							//If collided, skip other checks 
 	beq iMH_end
 	
-	//Check if turtle has been hit (white)
-	mov r0, r4							//Arg1: address of mario_data
-	mov r1, r6							//Arg2: Check the specified direction
-	ldr r2, =turtle_color_w 			
-	ldr r2, [r2] 						//Arg3: White turtle color 
-	bl CollisionColorCheck  
-	cmp r0, #1
-	beq iMH_end							//If collided, skip other checks 
-	
-	//Check if turtle has been hit (orange)
+	//Check if turtle has been hit from side (orange)
 	mov r0, r4							//Arg1: address of mario_data
 	mov r1, r6							//Arg2: Check the specified direction
 	ldr r2, =turtle_color_o 			
@@ -757,11 +764,33 @@ isMonsterHit:
 	cmp r0, #1
 	beq iMH_end							//If collided, skip other checks 
 	
-	//Check if turtle has been hit (green)
+	//Check if turtle has been hit from side (green)
 	mov r0, r4							//Arg1: address of mario_data
 	mov r1, r6							//Arg2: Check the specified direction
 	ldr r2, =turtle_color_g 			
 	ldr r2, [r2] 						//Arg3: Green turtle color 
+	bl CollisionColorCheck  
+	cmp r0, #1
+	beq iMH_end							//If collided, skip other checks 
+	
+	b iMH_end							//Branch to end 
+	
+iMH_bottom:
+
+	//Check if a gumba has been hit from above
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction 
+	ldr r2, =gumba_color_hit 			
+	ldrh r2, [r2]						//Arg3: Check gumba color
+	bl CollisionColorCheck
+	cmp r0, #1							//If collided, skip other checks 
+	beq iMH_end
+
+	//Check if turtle has been hit from above 
+	mov r0, r4							//Arg1: address of mario_data
+	mov r1, r6							//Arg2: Check the specified direction
+	ldr r2, =turtle_color_hit 			
+	ldrh r2, [r2] 						//Arg3: White turtle color 
 	bl CollisionColorCheck  
 	cmp r0, #1
 	beq iMH_end							//If collided, skip other checks 
@@ -958,40 +987,7 @@ CollisionStar:
 										
 	pop {r4, lr}
 	bx lr 
-	
-/**
-	
-	//Check if mario hit an impassable object to the right
-	ldr r0, =mario_data 				//Arg1: address of mario_data
-	mov r1, #3							//Arg2: Check the left
-	bl isCollisionImpassable			//Call isCollisionImpassable
-	
-	cmp r0, #1							//Has mario hit the floor? 
-	beq CMLR_impassable	 				//Branch to CMLR_impassable	
-	
-	//Check if mario hit a monster 
-	ldr r0, =mario_data					//Arg1: address of mario data 
-	mov r1, #3							//Arg2: check right
-	bl isMonsterHit						//Has mario hit a monster?
-	cmp r0, #1							
-	bne CMLR_continue 
-	
-	ldr r0, =jump_flag					//Load address of jump_flag
-	ldr r0, [r0]
-	cmp r0, #0
-	beq CMLR_continue
-	
-	ldr r0, =is_floor					//Set the floor flag 
-	ldr r0, [r0]
-	cmp r0, #0
-	beq CMLR_continue
-	
-	
-	bleq CollisionMarioDead				//Set Mario's position to his respawn position and remove a life 
-	
-	beq CMLR_end
-CMLR_continue:
-*/
+
 
 
 	
